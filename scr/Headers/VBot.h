@@ -22,6 +22,15 @@ namespace PlayLayer {
 
     inline bool(__thiscall* releaseButton)(CCLayer* self, int state, bool player);
     bool __fastcall releaseButtonHook(CCLayer* self, uintptr_t, int state, bool player);
+
+    inline void(__thiscall* levelComplete)(void* self);
+    void __fastcall levelCompleteHook(void* self);
+
+    inline void(__thiscall* resetLevel)(void* self);
+    void __fastcall resetLevelHook(void* self);
+
+    inline void(__thiscall* onExit)(void* self);
+    void __fastcall onExitHook(void* self);
 }
 
 namespace PauseLayer {
