@@ -5,86 +5,199 @@
 using namespace cocos2d;
 
 size_t base = reinterpret_cast<size_t>(GetModuleHandle(0));
-auto play_layer = *reinterpret_cast<uintptr_t*>(*reinterpret_cast<uintptr_t*>(base + 0x3222D0) + 0x164);
 
+std::list<float> pushCoords = {};
+std::list<float> releaseCoords = {};
 
-void PlayLayer::pushButton() {
-	reinterpret_cast<int(__thiscall*)(uintptr_t, int, bool)>(base + 0x111500)(play_layer, 0, true);
-}
-
-void PlayLayer::releaseButton() {
-	reinterpret_cast<int(__thiscall*)(uintptr_t, int, bool)>(base + 0x111660)(play_layer, 0, true);
-}
+bool enabled = false;
+bool mode = false; // False = Playback | True = Record
 
 float getXPos() {
 	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
 	return playLayer->m_pPlayer1->position.x;
 }
 
-void checkJump() {
-
-	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
-
-	float xpos = 0;
-
-	while (1) {
-		if (playLayer) {
-			
-			xpos = getXPos();
-			
-			/*if (xpos == 1133078005) {
-				PlayLayer::pushButton();
-			}
-			if (xpos == 1133574305) {
-				PlayLayer::releaseButton();
-			}*/
-		}
-		
-		Sleep(100);
-	}
-}
-
-
-	
-
-bool __fastcall PlayLayer::initHook(CCLayer* self, void*, void* GJGameLevel) {
+bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	auto result = init(self, GJGameLevel);
 	if (!result) return result;
-	
-	//std::thread botThread(checkJump);
-	//botThread.detach();
+
+	float xpos = getXPos();
+
+	auto winSize = CCDirector::sharedDirector()->getWinSize();
 
 	auto menu = CCMenu::create();
-	float xpos = getXPos();
-	auto xposText = std::to_string(xpos);
-	const char* xposText2 = xposText.c_str();
+	menu->setPositionX(0);
+	menu->setPositionY(13);
+
+	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
+	auto xposCString = xposString.c_str();
+	auto XposText = CCLabelBMFont::create(xposCString, "goldFont.fnt");
+	XposText->setPositionX(5);
+	XposText->setPositionY(10);
+	XposText->setScale(0.6);
+	XposText->setAnchorPoint({ 0, 0.5 });
+
+	auto ModeText = CCLabelBMFont::create("Mode: Playback", "goldFont.fnt");
+	ModeText->setPositionX(5);
+	ModeText->setPositionY(23);
+	ModeText->setScale(0.6);
+	ModeText->setAnchorPoint({ 0, 0.5 });
+
+	auto VBotText = CCLabelBMFont::create("VBot", "goldFont.fnt");
+	VBotText->setPositionX(5);
+	VBotText->setPositionY(36);
+	VBotText->setScale(0.6);
+	VBotText->setAnchorPoint({ -1, 0.5 });
 	
-	auto text = CCLabelBMFont::create(xposText2, "goldFont.fnt");
-	text->setPositionX(20);
-	text->setPositionY(20);
+	menu->setTag(10000);
+	XposText->setTag(10001);
+	ModeText->setTag(10002);
+	VBotText->setTag(10003);
 
-	menu->addChild(text);
+	menu->setZOrder(1000);
+	XposText->setZOrder(1000);
+	ModeText->setZOrder(1000);
+	VBotText->setZOrder(1000);
+
+	menu->addChild(XposText);
+	menu->addChild(ModeText);
+	menu->addChild(VBotText);
 	self->addChild(menu);
-
-	while (1) {
-		float xpos = getXPos();
-		auto xposText = std::to_string(xpos);
-		const char* xposText2 = xposText.c_str();
-
-		text->setString(xposText2);
-		Sleep(1);
-	}
 
 	return result;
 }
 
-void PlayLayer::mem_init() {
+bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
+	if (mode) {
+		PlayLayer::pushButton(self, 0, true);
+		float xpos = getXPos();
+		pushCoords.insert(pushCoords.end(), xpos);
+	}
+
+	return true;
+}
+
+bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
+	if (mode) {
+		PlayLayer::releaseButton(self, 0, true);
+		float xpos = getXPos();
+		releaseCoords.insert(releaseCoords.end(), xpos);
+	}
+
+	return true;
+}
+
+void Playback_Code(CCLayer* self, float xpos) {
+	if (std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) PlayLayer::pushButton(self, 0, true);
+	if (std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) PlayLayer::releaseButton(self, 0, true);
+
+}
+
+void Record_Code(CCLayer* self, float xpos) {
+	
+
+}
+
+void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
+	PlayLayer::update(self, deltatime);
+	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+
+	float xpos = getXPos();
+	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
+	auto xposCString = xposString.c_str();
+	auto XposText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10001));
+	XposText->setString(xposCString);
+	
+	auto ModeText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10002));
+
+	if (!mode) {
+		ModeText->setString("Mode: Playback");
+		Playback_Code(self, xpos);
+	}
+	if (mode) {
+		ModeText->setString("Mode: Record");
+		Record_Code(self, xpos);
+	}
+}
+
+void PauseLayer::callbacks::switchMode(CCObject*) {
+	mode = !mode;
+	if (mode) {
+		pushCoords.clear();
+		releaseCoords.clear();
+	}
+}
+
+void PauseLayer::callbacks::switchEnabled(CCObject*) {
+	enabled = !enabled;
+}
+
+bool __fastcall PauseLayer::initHook(CCLayer* self) {
+	auto result = PauseLayer::init(self);
+	if (!result) return result;
+
+	auto menu = CCMenu::create();
+	menu->setPositionX(0);
+	menu->setPositionY(0);
+
+	auto ModeText = CCLabelBMFont::create("Switch Mode: ", "goldFont.fnt");
+	ModeText->setPositionX(5);
+	ModeText->setPositionY(10);
+	ModeText->setScale(0.6);
+	ModeText->setAnchorPoint({ 0, 0.5 });
+
+	auto playback = CCSprite::createWithSpriteFrameName("GJ_rotationControlBtn01_001.png");
+	auto record = CCSprite::createWithSpriteFrameName("GJ_rotationControlBtn02_001.png");
+	
+	auto ModeButton = gd::CCMenuItemToggler::create((mode) ? playback : record, (mode) ? record : playback, menu, menu_selector(PauseLayer::callbacks::switchMode));
+	ModeButton->setPositionX(ModeText->getScaledContentSize().width+5+ModeButton->getScaledContentSize().width/2);
+	ModeButton->setPositionY(10);
+	ModeButton->setScale(0.6);
+	ModeButton->setAnchorPoint({ 0.5, 0.5 });
+	
+	menu->setTag(10000);
+	ModeText->setTag(10004);
+	ModeButton->setTag(10005);
+
+	menu->setZOrder(1000);
+	ModeText->setZOrder(1000);
+	ModeButton->setZOrder(10005);
+
+	menu->addChild(ModeText);
+	menu->addChild(ModeButton);
+	self->addChild(menu);
+
+	return result;
+}
+
+void Vbot::mem_init() {
 	MH_CreateHook(
 		(PVOID)(base + 0x01FB780),
 		PlayLayer::initHook,
 		(LPVOID*)&PlayLayer::init
 	);
-}
 
-/*
-*/
+	MH_CreateHook(
+		(PVOID)(base + 0x2029C0),
+		PlayLayer::updateHook,
+		(LPVOID*)&PlayLayer::update
+	);
+
+	MH_CreateHook(
+		(PVOID)(base + 0x1E4620),
+		PauseLayer::initHook,
+		(LPVOID*)&PauseLayer::init
+	);
+
+	MH_CreateHook(
+		(PVOID)(base + 0x111500),
+		PlayLayer::pushButtonHook,
+		(LPVOID*)&PlayLayer::pushButton
+	);
+
+	MH_CreateHook(
+		(PVOID)(base + 0x111660),
+		PlayLayer::releaseButtonHook,
+		(LPVOID*)&PlayLayer::releaseButton
+	);
+}

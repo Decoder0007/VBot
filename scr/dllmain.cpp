@@ -7,7 +7,7 @@ DWORD WINAPI Main_Thread(void* hModule) {
     //====================
 
     MH_Initialize();
-    PlayLayer::mem_init();
+    Vbot::mem_init();
     MH_EnableHook(MH_ALL_HOOKS);
     
     return 0;
