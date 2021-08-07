@@ -13,6 +13,7 @@ bool enabled = false;
 bool mode = false; // False = Playback | True = Record
 int clicks = 0;
 bool waitingForFirstClick = true;
+bool restartLevel = false;
 
 float getXPos() {
 	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
@@ -47,8 +48,6 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 	else {
 		PlayLayer::pushButton(self, 0, true);
 	}
-	
-
 	return true;
 }
 
@@ -150,7 +149,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	SwitchRecordText->setZOrder(1000);
 	ClicksText->setZOrder(1000);
 	MouseUpSprite->setZOrder(1000);
-	MouseDownSprite->setZOrder(1000);
+	MouseDownSprite->setZOrder(1001);
 
 	menu->addChild(XposText);
 	menu->addChild(ModeText);
@@ -169,20 +168,18 @@ void Playback_Code(CCLayer* self, float xpos) {
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
 	auto MouseDownSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10008));
+	MouseUpSprite->setVisible(true);
 	
 	if (std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) {
 		PlayLayer::pushButton(self, 0, true);
 
 		clicks += 1;
-		
-		MouseUpSprite->setVisible(false);
 		MouseDownSprite->setVisible(true);
 	}
 
 	if (std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) {
 		PlayLayer::releaseButton(self, 0, true);
-
-		MouseUpSprite->setVisible(true);
+		
 		MouseDownSprite->setVisible(false);
 	}
 }
@@ -200,6 +197,11 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	PlayLayer::update(self, deltatime);
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
+
+	if(restartLevel){
+		restartLevel = false;
+		PlayLayer::resetLevel(self);
+	}
 
 	float xpos = getXPos();
 	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
@@ -294,6 +296,7 @@ void PauseLayer::callbacks::switchMode(CCObject*) {
 		pushCoords.clear();
 		releaseCoords.clear();
 	}
+	restartLevel = true;
 }
 
 void PauseLayer::callbacks::switchEnabled(CCObject*) {

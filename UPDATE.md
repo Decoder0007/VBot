@@ -1,3 +1,17 @@
+# v1.4
+
+## Added features
+
+- Automatic restart when switching between modes
+
+## Bugfixes
+
+- Fixed bug where click indicator would not show after switching to playtest mode
+
+# v1.3 Bugfix 1
+
+- Fixed bug where game would crash when playtesting in the editor
+
 # v1.3
 
 ## Added features
