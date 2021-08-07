@@ -21,44 +21,54 @@ float getXPos() {
 
 bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
-	if (mode) {
-		PlayLayer::pushButton(self, 0, true);
-		if (waitingForFirstClick) {
-			waitingForFirstClick = false;
-			pushCoords.clear();
-			releaseCoords.clear();
-		}
-		float xpos = getXPos();
-		pushCoords.insert(pushCoords.end(), xpos);
-		
-		clicks += 1;
-	}
+	if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
+		if (mode) {
+			PlayLayer::pushButton(self, 0, true);
+			if (waitingForFirstClick) {
+				waitingForFirstClick = false;
+				pushCoords.clear();
+				releaseCoords.clear();
+			}
+			float xpos = getXPos();
+			pushCoords.insert(pushCoords.end(), xpos);
 
-	if (!mode) {
-		auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10004));
-		auto SwitchRecordText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10005));
-		CCFadeOut* fadeOut = CCFadeOut::create(1.75f);
-		CCFadeOut* fadeOut2 = CCFadeOut::create(1.75f);
-		InputDisabledText->runAction(fadeOut);
-		SwitchRecordText->runAction(fadeOut2);
+			clicks += 1;
+		}
+
+		if (!mode) {
+			auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10004));
+			auto SwitchRecordText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10005));
+			CCFadeOut* fadeOut = CCFadeOut::create(1.75f);
+			CCFadeOut* fadeOut2 = CCFadeOut::create(1.75f);
+			InputDisabledText->runAction(fadeOut);
+			SwitchRecordText->runAction(fadeOut2);
+		}
 	}
+	else {
+		PlayLayer::pushButton(self, 0, true);
+	}
+	
 
 	return true;
 }
 
 bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
-	if (mode) {
+	if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
+		if (mode) {
+			PlayLayer::releaseButton(self, 0, true);
+			float xpos = getXPos();
+			releaseCoords.insert(releaseCoords.end(), xpos);
+		}
+
+		if (!mode) {
+			auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+			auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
+
+		}
+	}
+	else {
 		PlayLayer::releaseButton(self, 0, true);
-		float xpos = getXPos();
-		releaseCoords.insert(releaseCoords.end(), xpos);
 	}
-
-	if (!mode) {
-		auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
-		auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
-		
-	}
-
 	return true;
 }
 
