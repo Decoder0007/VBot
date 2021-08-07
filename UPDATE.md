@@ -66,7 +66,7 @@ ok fine
 
 
 
-here is a (link)[https://www.youtube.com/watch?v=ub82Xb1C8os] to README.md
+here is a [link](https://www.youtube.com/watch?v=ub82Xb1C8os) to README.md
 
 
 
