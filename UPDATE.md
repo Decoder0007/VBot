@@ -1,3 +1,7 @@
+# v1.4 Bugfix 1
+
+- Fixed bug where it would say v1.3 even tho its 1.4
+
 # v1.4
 
 ## Added features

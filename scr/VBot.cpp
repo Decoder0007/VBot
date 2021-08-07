@@ -83,7 +83,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->setPositionX(0);
 	menu->setPositionY(13);
 
-	auto VBotText = CCLabelBMFont::create("VBot v1.3", "goldFont.fnt");
+	auto VBotText = CCLabelBMFont::create("VBot v1.4.1", "goldFont.fnt");
 	VBotText->setPositionX(5);
 	VBotText->setPositionY(39);
 	VBotText->setScale(0.6);
