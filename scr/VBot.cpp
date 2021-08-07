@@ -31,10 +31,7 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 		float xpos = getXPos();
 		pushCoords.insert(pushCoords.end(), xpos);
 		
-		auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
 		clicks += 1;
-		auto ClicksString = (std::string)"Clicks: " + std::to_string(clicks);
-		ClicksText->setString(ClicksString.c_str(), "goldFont.fnt");
 	}
 
 	if (!mode) {
@@ -65,26 +62,6 @@ bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state
 	return true;
 }
 
-void Playback_Code(CCLayer* self, float xpos) {
-	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
-	if (std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) {
-		PlayLayer::pushButton(self, 0, true);
-
-		auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
-		clicks += 1;
-		auto ClicksString = (std::string)"Clicks: " + std::to_string(clicks);
-		ClicksText->setString(ClicksString.c_str(), "goldFont.fnt");
-	}
-	
-	if (std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) PlayLayer::releaseButton(self, 0, true);
-
-}
-
-void Record_Code(CCLayer* self, float xpos) {
-	
-
-}
-
 bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	auto result = init(self, GJGameLevel);
 	if (!result) return result;
@@ -97,7 +74,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->setPositionX(0);
 	menu->setPositionY(13);
 
-	auto VBotText = CCLabelBMFont::create("VBot v1.2", "goldFont.fnt");
+	auto VBotText = CCLabelBMFont::create("VBot v1.3", "goldFont.fnt");
 	VBotText->setPositionX(5);
 	VBotText->setPositionY(39);
 	VBotText->setScale(0.6);
@@ -137,6 +114,14 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	SwitchRecordText->setScale(0.50);
 	SwitchRecordText->setOpacity(0);
 
+	auto MouseUpSprite = CCSprite::create("GJ_button_04-uhd.png");
+	auto MouseDownSprite = CCSprite::create("GJ_button_01-uhd.png");
+	MouseUpSprite->setPositionX(winSize.width - (MouseUpSprite->getScaledContentSize().width / 2) - 5);
+	MouseDownSprite->setPositionX(winSize.width - (MouseDownSprite->getScaledContentSize().width / 2) - 5);
+	MouseUpSprite->setPositionY(10);
+	MouseDownSprite->setPositionY(10);
+	MouseDownSprite->setVisible(false);
+		
 	menu->setTag(10000);
 	XposText->setTag(10001);
 	ModeText->setTag(10002);
@@ -144,6 +129,8 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	InputDisabledText->setTag(10004);
 	SwitchRecordText->setTag(10005);
 	ClicksText->setTag(10006);
+	MouseUpSprite->setTag(10007);
+	MouseDownSprite->setTag(10008);
 
 	menu->setZOrder(1000);
 	XposText->setZOrder(1000);
@@ -152,6 +139,8 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	InputDisabledText->setZOrder(1000);
 	SwitchRecordText->setZOrder(1000);
 	ClicksText->setZOrder(1000);
+	MouseUpSprite->setZOrder(1000);
+	MouseDownSprite->setZOrder(1000);
 
 	menu->addChild(XposText);
 	menu->addChild(ModeText);
@@ -159,14 +148,48 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->addChild(InputDisabledText);
 	menu->addChild(SwitchRecordText);
 	menu->addChild(ClicksText);
+	menu->addChild(MouseUpSprite);
+	menu->addChild(MouseDownSprite);
 	self->addChild(menu);
 
 	return result;
 }
 
+void Playback_Code(CCLayer* self, float xpos) {
+	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
+	auto MouseDownSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10008));
+	
+	if (std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) {
+		PlayLayer::pushButton(self, 0, true);
+
+		clicks += 1;
+		
+		MouseUpSprite->setVisible(false);
+		MouseDownSprite->setVisible(true);
+	}
+
+	if (std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) {
+		PlayLayer::releaseButton(self, 0, true);
+
+		MouseUpSprite->setVisible(true);
+		MouseDownSprite->setVisible(false);
+	}
+}
+
+void Record_Code(CCLayer* self, float xpos) {
+	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
+	auto MouseDownSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10008));
+
+	MouseUpSprite->setVisible(false);
+	MouseDownSprite->setVisible(false);
+}
+
 void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	PlayLayer::update(self, deltatime);
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+	auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
 
 	float xpos = getXPos();
 	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
@@ -184,6 +207,9 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 		ModeText->setString("Mode: Record");
 		Record_Code(self, xpos);
 	}
+
+	auto ClicksString = (std::string)"Clicks: " + std::to_string(clicks);
+	ClicksText->setString(ClicksString.c_str(), "goldFont.fnt");
 }
 
 void __fastcall PlayLayer::levelCompleteHook(void* self) {
@@ -208,19 +234,6 @@ void __fastcall PlayLayer::onExitHook(void* self) {
 	// mode and watch it up until they die. If they click when this is true
 	// then the lists are cleared.
 	waitingForFirstClick = true;
-}
-
-void PauseLayer::callbacks::switchMode(CCObject*) {
-	mode = !mode;
-	clicks = 0;
-	if (mode) {
-		pushCoords.clear();
-		releaseCoords.clear();
-	}
-}
-
-void PauseLayer::callbacks::switchEnabled(CCObject*) {
-	enabled = !enabled;
 }
 
 bool __fastcall PauseLayer::initHook(CCLayer* self) {
@@ -262,6 +275,19 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	self->addChild(menu);
 
 	return result;
+}
+
+void PauseLayer::callbacks::switchMode(CCObject*) {
+	mode = !mode;
+	clicks = 0;
+	if (mode) {
+		pushCoords.clear();
+		releaseCoords.clear();
+	}
+}
+
+void PauseLayer::callbacks::switchEnabled(CCObject*) {
+	enabled = !enabled;
 }
 
 void Vbot::mem_init() {
