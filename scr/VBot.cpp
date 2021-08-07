@@ -13,7 +13,6 @@ bool enabled = false;
 bool mode = false; // False = Playback | True = Record
 int clicks = 0;
 bool waitingForFirstClick = true;
-bool restartLevel = false;
 
 float getXPos() {
 	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
@@ -25,15 +24,21 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 	if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
 		if (mode) {
 			PlayLayer::pushButton(self, 0, true);
+
 			if (waitingForFirstClick) {
 				waitingForFirstClick = false;
 				pushCoords.clear();
 				releaseCoords.clear();
 			}
 			float xpos = getXPos();
-			pushCoords.insert(pushCoords.end(), xpos);
 
-			clicks += 1;
+			// This if statement stops smamming lists with the
+			// same xpos.
+
+			if (!(std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end())) {
+				pushCoords.insert(pushCoords.end(), xpos);
+				clicks += 1;
+			}
 		}
 
 		if (!mode) {
@@ -56,13 +61,14 @@ bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state
 		if (mode) {
 			PlayLayer::releaseButton(self, 0, true);
 			float xpos = getXPos();
-			releaseCoords.insert(releaseCoords.end(), xpos);
+			if (!(std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end())) {
+				releaseCoords.insert(releaseCoords.end(), xpos);
+			}
 		}
 
 		if (!mode) {
 			auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 			auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
-
 		}
 	}
 	else {
@@ -169,15 +175,17 @@ void Playback_Code(CCLayer* self, float xpos) {
 	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
 	auto MouseDownSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10008));
 	MouseUpSprite->setVisible(true);
+
+	auto isDead = gd::GameManager::sharedState()->m_pPlayLayer->is_dead;
 	
-	if (std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) {
+	if ((std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) && !isDead ) {
 		PlayLayer::pushButton(self, 0, true);
 
 		clicks += 1;
 		MouseDownSprite->setVisible(true);
 	}
 
-	if (std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) {
+	if ((std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) && !isDead) {
 		PlayLayer::releaseButton(self, 0, true);
 		
 		MouseDownSprite->setVisible(false);
@@ -197,11 +205,6 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	PlayLayer::update(self, deltatime);
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
-
-	if(restartLevel){
-		restartLevel = false;
-		PlayLayer::resetLevel(self);
-	}
 
 	float xpos = getXPos();
 	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
@@ -296,7 +299,6 @@ void PauseLayer::callbacks::switchMode(CCObject*) {
 		pushCoords.clear();
 		releaseCoords.clear();
 	}
-	restartLevel = true;
 }
 
 void PauseLayer::callbacks::switchEnabled(CCObject*) {

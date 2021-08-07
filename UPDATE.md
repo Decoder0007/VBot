@@ -1,3 +1,8 @@
+# v1.4 Bugfix 2
+
+- Fixed bug where macros didnt save after completing/restarting the level
+- Had to temporarily remove the auto restart when changing modes to fix this. 
+
 # v1.4 Bugfix 1
 
 - Fixed bug where it would say v1.3 even tho its 1.4
