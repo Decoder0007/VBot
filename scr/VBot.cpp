@@ -1,6 +1,5 @@
 #include "VBot.h"
-#include <thread>
-#include <sstream>
+#include <fstream>
 
 using namespace cocos2d;
 
@@ -19,6 +18,35 @@ float getXPos() {
 	return playLayer->m_pPlayer1->position.x;
 }
 
+void SaveMacro(std::string name) {
+	std::fstream myfile;
+	myfile.open(name, std::ios::out);
+	myfile << pushCoords.size();
+	if (myfile.is_open()) {
+		std::string pushCoordsString;
+		for (auto word : pushCoords)
+		{
+			myfile << word;
+			myfile << "\n";
+		}
+	}
+	myfile << releaseCoords.size();
+	if (myfile.is_open()) {
+		std::string releaseCoordsString;
+		for (auto word : releaseCoords)
+		{
+			myfile << word;
+			myfile << "\n";
+		}
+	}
+	myfile << "End of macro";
+	myfile << "You shouldn't be here >:(";
+}
+
+void PauseLayer::callbacks::modeInfoWindow(CCObject*) {
+	gd::FLAlertLayer::create(nullptr, "yoo", "yoooo", "yoooooo", "yoooooooo")->show();
+}
+
 bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
@@ -32,14 +60,9 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 			}
 			float xpos = getXPos();
 
-			// This if statement stops smamming lists with the
-			// same xpos.
-
-			if (!(std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end())) {
-				pushCoords.insert(pushCoords.end(), xpos);
-				clicks += 1;
+			pushCoords.insert(pushCoords.end(), xpos);
+			clicks += 1;
 			}
-		}
 
 		if (!mode) {
 			auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10004));
@@ -89,13 +112,13 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->setPositionX(0);
 	menu->setPositionY(13);
 
-	auto VBotText = CCLabelBMFont::create("VBot v1.4 Bugfix 2", "goldFont.fnt");
+	auto VBotText = CCLabelBMFont::create("VBot v1.4 Bugfix 2", "goldFont-uhd.fnt");
 	VBotText->setPositionX(5);
 	VBotText->setPositionY(39);
 	VBotText->setScale(0.6);
 	VBotText->setAnchorPoint({ 0, 0.5 });
 
-	auto ModeText = CCLabelBMFont::create("Mode: Playback", "goldFont.fnt");
+	auto ModeText = CCLabelBMFont::create("Mode: Playback", "goldFont-uhd.fnt");
 	ModeText->setPositionX(5);
 	ModeText->setPositionY(26);
 	ModeText->setScale(0.6);
@@ -103,13 +126,13 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 
 	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
 	auto xposCString = xposString.c_str();
-	auto XposText = CCLabelBMFont::create(xposCString, "goldFont.fnt");
+	auto XposText = CCLabelBMFont::create(xposCString, "goldFont-uhd.fnt");
 	XposText->setPositionX(5);
 	XposText->setPositionY(13);
 	XposText->setScale(0.6);
 	XposText->setAnchorPoint({ 0, 0.5 });
 
-	auto ClicksText = CCLabelBMFont::create("Clicks: 0", "goldFont.fnt");
+	auto ClicksText = CCLabelBMFont::create("Clicks: 0", "goldFont-uhd.fnt");
 	ClicksText->setPositionX(5);
 	ClicksText->setPositionY(0);
 	ClicksText->setScale(0.6);
@@ -175,17 +198,15 @@ void Playback_Code(CCLayer* self, float xpos) {
 	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
 	auto MouseDownSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10008));
 	MouseUpSprite->setVisible(true);
-
-	auto isDead = gd::GameManager::sharedState()->m_pPlayLayer->is_dead;
 	
-	if ((std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) && !isDead ) {
+	if (std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end()) {
 		PlayLayer::pushButton(self, 0, true);
 
 		clicks += 1;
 		MouseDownSprite->setVisible(true);
 	}
 
-	if ((std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) && !isDead) {
+	if (std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end()) {
 		PlayLayer::releaseButton(self, 0, true);
 		
 		MouseDownSprite->setVisible(false);
@@ -224,13 +245,14 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	}
 
 	auto ClicksString = (std::string)"Clicks: " + std::to_string(clicks);
-	ClicksText->setString(ClicksString.c_str(), "goldFont.fnt");
+	ClicksText->setString(ClicksString.c_str(), "goldFont-uhd.fnt");
 }
 
 void __fastcall PlayLayer::levelCompleteHook(void* self) {
 	levelComplete(self);
-	clicks = 0;
 	mode = false;
+	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
+	SaveMacro(levelName + (std::string)".txt");
 }
 
 void __fastcall PlayLayer::resetLevelHook(void* self) {
@@ -261,32 +283,54 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	menu->setPositionX(0);
 	menu->setPositionY(0);
 
-	auto ModeText = CCLabelBMFont::create("Switch Mode: ", "goldFont.fnt");
-	ModeText->setPositionX(5);
-	ModeText->setPositionY(10);
-	ModeText->setScale(0.6);
-	ModeText->setAnchorPoint({ 0, 0.5 });
-
 	auto playback = CCSprite::createWithSpriteFrameName("GJ_rotationControlBtn01_001.png");
 	auto record = CCSprite::createWithSpriteFrameName("GJ_rotationControlBtn02_001.png");
-	
+	auto info = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
+
+	auto options = extension::CCScale9Sprite::create("GJ_square01-uhd.png");
+	options->setContentSize({ 110, 220 });
+	options->setPositionX(64);
+	options->setPositionY(185);
+
+	auto VBotText = CCLabelBMFont::create("VBot Options", "goldFont-uhd.fnt");
+	VBotText->setPositionX(65);
+	VBotText->setPositionY(280);
+	VBotText->setScale(0.525);
+
+	auto ModeText = CCLabelBMFont::create("Switch Mode: ", "goldFont-uhd.fnt");
+	ModeText->setPositionX(50);
+	ModeText->setPositionY(250);
+	ModeText->setScale(0.4);
+
 	auto ModeButton = gd::CCMenuItemToggler::create((mode) ? playback : record, (mode) ? record : playback, menu, menu_selector(PauseLayer::callbacks::switchMode));
-	ModeButton->setPositionX(ModeText->getScaledContentSize().width+5+ModeButton->getScaledContentSize().width/2);
-	ModeButton->setPositionY(10);
+	ModeButton->setPositionX(90);
+	ModeButton->setPositionY(250);
 	ModeButton->setScale(0.6);
-	ModeButton->setAnchorPoint({ 0.5, 0.5 });
-	
+
+	auto ModeInfoButton = gd::CCMenuItemSpriteExtra::create(info, menu, menu_selector(PauseLayer::callbacks::modeInfoWindow));
+	ModeInfoButton->setPositionX(105);
+	ModeInfoButton->setPositionY(250);
+	ModeInfoButton->setScale(0.4);
+
 	menu->setTag(10000);
 	ModeText->setTag(10001);
 	ModeButton->setTag(10002);
-	
+    options->setTag(10003);
+	VBotText->setTag(10004);
+	ModeInfoButton->setTag(10005);
 
 	menu->setZOrder(1000);
 	ModeText->setZOrder(1000);
-	ModeButton->setZOrder(10005);
+	ModeButton->setZOrder(1000);
+	options->setZOrder(999);
+	VBotText->setZOrder(1000);
+	ModeInfoButton->setZOrder(1000);
 
 	menu->addChild(ModeText);
 	menu->addChild(ModeButton);
+	menu->addChild(options);
+	menu->addChild(VBotText);
+	menu->addChild(ModeInfoButton);
 	self->addChild(menu);
 
 	return result;
@@ -294,11 +338,7 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 
 void PauseLayer::callbacks::switchMode(CCObject*) {
 	mode = !mode;
-	clicks = 0;
-	if (mode) {
-		pushCoords.clear();
-		releaseCoords.clear();
-	}
+	waitingForFirstClick = true;
 }
 
 void PauseLayer::callbacks::switchEnabled(CCObject*) {

@@ -109,7 +109,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)cappuccino-sdk\incl\cocos2dx;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\kazmath\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\win32;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32\OGLES;$(SolutionDir)scr\Headers;$(SolutionDir)scr\Libs;$(SolutionDir)scr;$(SolutionDir)gd.h\include;$(SolutionDir)gd.h;$(SolutionDir)cappuccino-sdk\incl\extensions;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)cappuccino-sdk\incl\cocos2dx;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\kazmath\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\win32;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32;$(SolutionDir)cappuccino-sdk\incl\extensions;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32\OGLES;$(SolutionDir)scr\Headers;$(SolutionDir)scr\Libs;$(SolutionDir)scr;$(SolutionDir)gd.h\include;$(SolutionDir)gd.h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

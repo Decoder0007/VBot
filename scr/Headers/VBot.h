@@ -1,5 +1,6 @@
 #pragma once
 #include <cocos2d.h>
+#include <GUI/CCControlExtension/CCScale9Sprite.h>
 #include "MinHook.h"
 #include "gd.h"
 
@@ -41,5 +42,6 @@ namespace PauseLayer {
     public:
         void switchMode(CCObject*);
         void switchEnabled(CCObject*);
+        void modeInfoWindow(CCObject*);
     };
 }
