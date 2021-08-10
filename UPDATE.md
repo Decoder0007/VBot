@@ -1,3 +1,16 @@
+# v1.5
+
+## Added features
+
+- Saving Macros!
+- Loading Macros!
+- Proper Options Menu!
+- Info on the switch mode command!
+
+## Bugfixes
+
+- Fixed bug where macros didn't save. sry for that. It was a great feature :(
+
 # v1.4 Bugfix 2
 
 - Fixed bug where macros didnt save after completing/restarting the level

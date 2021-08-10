@@ -1,7 +1,5 @@
 # Vbot
 
-Geometry Dash Macro Maker
-
 ## Current Features
 
 - Recording macros
@@ -11,9 +9,11 @@ Geometry Dash Macro Maker
 - Playback mode is automatically enabled on level complete
 - Playback mode is automatically enabled on level exit
 - Click indicator in playback mode
+- Saving macros
+- Loading macros
+- Proper Options Menu
 
 ## TODO
 
-- Saving macros
-- Loading macros
-- Auto restart when switching to record/playback mode
+- Auto Save
+- Auto Load
