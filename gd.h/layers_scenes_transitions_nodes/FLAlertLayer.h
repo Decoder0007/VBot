@@ -105,6 +105,7 @@ namespace gd {
 			* g - green
 			* y - yellow
 			* o - orange
+			* b - blue
 			* and more that i'm too lazy to find.
 			* MAKE SURE YOU FOLLOW THIS FORMAT. ROB'S PARSING CAN AND WILL MESS UP OTHERWISE.
 			*/

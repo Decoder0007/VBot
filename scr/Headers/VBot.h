@@ -43,5 +43,7 @@ namespace PauseLayer {
         void switchMode(CCObject*);
         void switchEnabled(CCObject*);
         void modeInfoWindow(CCObject*);
+        void SaveMacroCallback(CCObject*);
+        void LoadMacroCallback(CCObject*);
     };
 }
