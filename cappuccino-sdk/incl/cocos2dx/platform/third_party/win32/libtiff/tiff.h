@@ -1,4 +1,4 @@
-/* $Id: tiff.h,v 1.67 2011-01-24 21:06:32 olivier Exp $ */
+/* Id: tiff.h,v 1.67 2011-01-24 21:06:32 olivier Exp  */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -113,7 +113,7 @@ typedef struct {
  *  - items marked with a + are obsoleted by revision 5.0,
  *  - items marked with a ! are introduced in revision 6.0.
  *  - items marked with a % are introduced post revision 6.0.
- *  - items marked with a $ are obsoleted by revision 6.0.
+ *  - items marked with a  are obsoleted by revision 6.0.
  *  - items marked with a & are introduced by Adobe DNG specification.
  */
 
@@ -193,7 +193,7 @@ typedef enum {
 #define	    PHOTOMETRIC_MINISBLACK	1	/* min value is black */
 #define	    PHOTOMETRIC_RGB		2	/* RGB color model */
 #define	    PHOTOMETRIC_PALETTE		3	/* color map indexed */
-#define	    PHOTOMETRIC_MASK		4	/* $holdout mask */
+#define	    PHOTOMETRIC_MASK		4	/* holdout mask */
 #define	    PHOTOMETRIC_SEPARATED	5	/* !color separations */
 #define	    PHOTOMETRIC_YCBCR		6	/* !CCIR 601 */
 #define	    PHOTOMETRIC_CIELAB		8	/* !1976 CIE L*a*b* */
@@ -239,13 +239,13 @@ typedef enum {
 #define	TIFFTAG_YPOSITION		287	/* y page offset of image lhs */
 #define	TIFFTAG_FREEOFFSETS		288	/* +byte offset to free block */
 #define	TIFFTAG_FREEBYTECOUNTS		289	/* +sizes of free blocks */
-#define	TIFFTAG_GRAYRESPONSEUNIT	290	/* $gray scale curve accuracy */
+#define	TIFFTAG_GRAYRESPONSEUNIT	290	/* gray scale curve accuracy */
 #define	    GRAYRESPONSEUNIT_10S	1	/* tenths of a unit */
 #define	    GRAYRESPONSEUNIT_100S	2	/* hundredths of a unit */
 #define	    GRAYRESPONSEUNIT_1000S	3	/* thousandths of a unit */
 #define	    GRAYRESPONSEUNIT_10000S	4	/* ten-thousandths of a unit */
 #define	    GRAYRESPONSEUNIT_100000S	5	/* hundred-thousandths */
-#define	TIFFTAG_GRAYRESPONSECURVE	291	/* $gray scale response curve */
+#define	TIFFTAG_GRAYRESPONSECURVE	291	/* gray scale response curve */
 #define	TIFFTAG_GROUP3OPTIONS		292	/* 32 flag bits */
 #define	TIFFTAG_T4OPTIONS		292	/* TIFF 6.0 proper name alias */
 #define	    GROUP3OPT_2DENCODING	0x1	/* 2-dimensional coding */
@@ -259,7 +259,7 @@ typedef enum {
 #define	    RESUNIT_INCH		2	/* english */
 #define	    RESUNIT_CENTIMETER		3	/* metric */
 #define	TIFFTAG_PAGENUMBER		297	/* page numbers of multi-page */
-#define	TIFFTAG_COLORRESPONSEUNIT	300	/* $color curve accuracy */
+#define	TIFFTAG_COLORRESPONSEUNIT	300	/* color curve accuracy */
 #define	    COLORRESPONSEUNIT_10S	1	/* tenths of a unit */
 #define	    COLORRESPONSEUNIT_100S	2	/* hundredths of a unit */
 #define	    COLORRESPONSEUNIT_1000S	3	/* thousandths of a unit */
@@ -351,8 +351,8 @@ typedef enum {
 #define TIFFTAG_REGIONWARPCORNERS	32955	/* warp quadrilateral */
 #define TIFFTAG_REGIONAFFINE		32956	/* affine transformation mat */
 /* tags 32995-32999 are private tags registered to SGI */
-#define	TIFFTAG_MATTEING		32995	/* $use ExtraSamples */
-#define	TIFFTAG_DATATYPE		32996	/* $use SampleFormat */
+#define	TIFFTAG_MATTEING		32995	/* use ExtraSamples */
+#define	TIFFTAG_DATATYPE		32996	/* use SampleFormat */
 #define	TIFFTAG_IMAGEDEPTH		32997	/* z depth of image */
 #define	TIFFTAG_TILEDEPTH		32998	/* z depth/data tile */
 /* tags 33300-33309 are private tags registered to Pixar */

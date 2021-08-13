@@ -30,8 +30,11 @@ namespace PlayLayer {
     inline void(__thiscall* resetLevel)(void* self);
     void __fastcall resetLevelHook(void* self);
 
-    inline void(__thiscall* onExit)(void* self);
-    void __fastcall onExitHook(void* self);
+    inline void(__thiscall* createCheckpoint)(void* self);
+    void __fastcall createCheckpointHook(void* self);
+
+    inline void(__thiscall* removeLastCheckpoint)(void* self);
+    void __fastcall removeLastCheckpointHook(void* self);
 }
 
 namespace PauseLayer {

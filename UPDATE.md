@@ -1,3 +1,16 @@
+# v1.6
+
+## Added features
+
+- (Buggy) Practice Mode Recording
+- Vbot text in options menu
+- Added enabled mode (Option on the pause menu that completely disables the bot)
+
+## Bugfixes
+
+- Crash on saving macros
+- Crash on loading macros
+
 # v1.5
 
 ## Added features

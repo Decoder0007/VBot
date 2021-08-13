@@ -1,5 +1,7 @@
 #include "VBot.h"
 #include <fstream>
+#include <list>
+#include <vector>
 
 using namespace cocos2d;
 
@@ -7,6 +9,8 @@ size_t base = reinterpret_cast<size_t>(GetModuleHandle(0));
 
 std::list<float> pushCoords = {};
 std::list<float> releaseCoords = {};
+std::list<float> testCoords = {};
+std::list<float> checkPoints = {};
 
 bool enabled = false;
 bool mode = false; // False = Playback | True = Record
@@ -18,22 +22,19 @@ float getXPos() {
 	return playLayer->m_pPlayer1->position.x;
 }
 
-void SaveMacro(std::string name) {
-	std::fstream myfile;
-	myfile.open(name, std::ios::out);
+void SaveMacro() {
 	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
+	std::fstream myfile;
+	myfile.open(levelName+".txt", std::ios::out);
+	
 	if (myfile.is_open()) {
 		myfile << pushCoords.size();
 		myfile << "\n";
-
-		std::string pushCoordsString;
 		for (float xpos : pushCoords)
 		{
 			myfile << std::setprecision(6) << std::fixed << xpos;
 			myfile << "\n";
 		}
-
-		std::string releaseCoordsString;
 		for (float xpos : releaseCoords)
 		{
 			myfile << std::setprecision(6) << std::fixed << xpos;
@@ -49,12 +50,15 @@ void SaveMacro(std::string name) {
 	myfile.close();
 }
 
-void LoadMacro(std::string name) {
+void LoadMacro() {
 	pushCoords.clear();
 	releaseCoords.clear();
 	std::string line;
-	std::ifstream file(name);
 	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
+	std::fstream file;
+	
+	file.open((levelName + ".txt"), std::ios::in);
+	
 	if (file.is_open()) {
 		getline(file, line); // Get the first line of the macro (Length of lists)
 		int len;
@@ -72,8 +76,9 @@ void LoadMacro(std::string name) {
 		gd::FLAlertLayer::create(nullptr, "Success!", "Ok", nullptr, "Successfully loaded macro: <cg>" + levelName + "</c>")->show();
 	}
 	else {
-		gd::FLAlertLayer::create(nullptr, "Error", "ok", nullptr, "An <cr>error</c> occured while loading the macro: <cg>"+levelName + "</c>" + "\nReason: The macro probably doesn't exist.\nSolution: Record a macro")->show();
+		gd::FLAlertLayer::create(nullptr, "Error", "ok", nullptr, 475, "An <cr>error</c> occured while loading the macro: <cg>" + levelName + "</c>" + "\nReason: The macro probably doesn't exist.\nSolution: Record a macro")->show();
 	}
+	
 }
 
 void switchModeFunc() {
@@ -127,72 +132,79 @@ void PauseLayer::callbacks::switchEnabled(CCObject*) {
 }
 
 void PauseLayer::callbacks::SaveMacroCallback(CCObject*) {
-	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-	SaveMacro(levelName + (std::string)".txt");
+	SaveMacro();
 
 }
 
 void PauseLayer::callbacks::LoadMacroCallback(CCObject*) {
-	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-	LoadMacro(levelName + (std::string)".txt");
+	LoadMacro();
 }
 
 bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
-	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
-	if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
-		if (mode) {
-			PlayLayer::pushButton(self, 0, true);
+	if (enabled) {
+		auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+		if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
+			if (mode) {
+				PlayLayer::pushButton(self, state, player);
 
-			if (waitingForFirstClick) {
-				pushCoords.clear();
-				releaseCoords.clear();
-				waitingForFirstClick = false;
+				if (waitingForFirstClick) {
+					pushCoords.clear();
+					releaseCoords.clear();
+					waitingForFirstClick = false;
+				}
+
+				float xpos = getXPos();
+				auto xposInList = std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end();
+
+				if (!xposInList) {
+					pushCoords.insert(pushCoords.end(), xpos);
+					clicks += 1;
+				}
 			}
-
-			float xpos = getXPos();
-			auto xposInList = std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end();
-
-			if (!xposInList) {
-				pushCoords.insert(pushCoords.end(), xpos);
-				clicks += 1;
+			if (!mode) {
+				auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10004));
+				auto SwitchRecordText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10005));
+				CCFadeOut* fadeOut = CCFadeOut::create(1.75f);
+				CCFadeOut* fadeOut2 = CCFadeOut::create(1.75f);
+				InputDisabledText->runAction(fadeOut);
+				SwitchRecordText->runAction(fadeOut2);
 			}
 		}
-		if (!mode) {
-			auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10004));
-			auto SwitchRecordText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10005));
-			CCFadeOut* fadeOut = CCFadeOut::create(1.75f);
-			CCFadeOut* fadeOut2 = CCFadeOut::create(1.75f);
-			InputDisabledText->runAction(fadeOut);
-			SwitchRecordText->runAction(fadeOut2);
+		else {
+			PlayLayer::pushButton(self, state, player);
 		}
 	}
 	else {
-		PlayLayer::pushButton(self, 0, true);
+		PlayLayer::pushButton(self, state, player);
 	}
-	
 	return true;
 }
 
 bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
-	if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
-		if (mode) {
-			PlayLayer::releaseButton(self, 0, true);
+	if (enabled) {
+		if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
+			if (mode) {
+				PlayLayer::releaseButton(self, state, player);
 
-			float xpos = getXPos();
-			auto xposInList = std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end();
+				float xpos = getXPos();
+				auto xposInList = std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end();
 
-			if (!xposInList) {
-				releaseCoords.insert(releaseCoords.end(), xpos);
+				if (!xposInList) {
+					releaseCoords.insert(releaseCoords.end(), xpos);
+				}
+			}
+
+			if (!mode) {
+				auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
+				auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
 			}
 		}
-
-		if (!mode) {
-			auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
-			auto InputDisabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
+		else {
+			PlayLayer::releaseButton(self, state, player);
 		}
 	}
 	else {
-		PlayLayer::releaseButton(self, 0, true);
+		PlayLayer::releaseButton(self, state, player);
 	}
 	return true;
 }
@@ -209,11 +221,17 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->setPositionX(0);
 	menu->setPositionY(13);
 
-	auto VBotText = CCLabelBMFont::create("VBot v1.4 Bugfix 2", "goldFont-uhd.fnt");
+	auto VBotText = CCLabelBMFont::create("VBot v1.6", "goldFont-uhd.fnt");
 	VBotText->setPositionX(5);
-	VBotText->setPositionY(39);
+	VBotText->setPositionY(52);
 	VBotText->setScale(0.6);
 	VBotText->setAnchorPoint({ 0, 0.5 });
+
+	auto EnabledText = CCLabelBMFont::create("Enabled", "goldFont-uhd.fnt");
+	EnabledText->setPositionX(5);
+	EnabledText->setPositionY(39);
+	EnabledText->setScale(0.6);
+	EnabledText->setAnchorPoint({ 0, 0.5 });
 
 	auto ModeText = CCLabelBMFont::create("Mode: Playback", "goldFont-uhd.fnt");
 	ModeText->setPositionX(5);
@@ -266,6 +284,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	ClicksText->setTag(10006);
 	MouseUpSprite->setTag(10007);
 	MouseDownSprite->setTag(10008);
+	EnabledText->setTag(10009);
 
 	menu->setZOrder(1000);
 	XposText->setZOrder(1000);
@@ -276,6 +295,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	ClicksText->setZOrder(1000);
 	MouseUpSprite->setZOrder(1000);
 	MouseDownSprite->setZOrder(1001);
+	EnabledText->setZOrder(1000);
 
 	menu->addChild(XposText);
 	menu->addChild(ModeText);
@@ -285,10 +305,8 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->addChild(ClicksText);
 	menu->addChild(MouseUpSprite);
 	menu->addChild(MouseDownSprite);
+	menu->addChild(EnabledText);
 	self->addChild(menu);
-
-	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-	LoadMacro(levelName + (std::string)".txt");
 
 	return result;
 }
@@ -305,16 +323,20 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	XposText->setString(xposCString);
 	
 	auto ModeText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10002));
+	auto EnabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10009));
+	if (enabled) EnabledText->setString("State: Enabled"); else EnabledText->setString("State: Disabled");
 
-	if (!mode) {
-		ModeText->setString("Mode: Playback");
-		Playback_Code(self, xpos);
+	if(enabled){
+		if (!mode) {
+			ModeText->setString("Mode: Playback");
+			Playback_Code(self, xpos);
+		}
+		if (mode) {
+			ModeText->setString("Mode: Record");
+			Record_Code(self, xpos);
+		}
 	}
-	if (mode) {
-		ModeText->setString("Mode: Record");
-		Record_Code(self, xpos);
-	}
-
+	
 	auto ClicksString = (std::string)"Clicks: " + std::to_string(clicks);
 	ClicksText->setString(ClicksString.c_str(), "goldFont-uhd.fnt");
 }
@@ -328,15 +350,27 @@ void __fastcall PlayLayer::levelCompleteHook(void* self) {
 void __fastcall PlayLayer::resetLevelHook(void* self) {
 	resetLevel(self);
 
-	waitingForFirstClick = true;
-	
-	clicks = 0;
-}
+	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
+	auto isPracticeMode = playLayer->is_practice_mode;
+	float xpos = getXPos();
 
-void __fastcall PlayLayer::onExitHook(void* self) {
-	onExit(self);
-	clicks = 0;
-	mode = false;
+	if (enabled && mode) {
+		if (isPracticeMode) {
+			// Push Coords
+			while (pushCoords.back() > xpos) {
+				pushCoords.pop_back();
+			}
+
+			// Release Coords
+			while (releaseCoords.back() > xpos) {
+				releaseCoords.pop_back();
+			}
+		}
+		else {
+			waitingForFirstClick = true;
+			clicks = 0;
+		}
+	}
 }
 
 bool __fastcall PauseLayer::initHook(CCLayer* self) {
@@ -352,6 +386,8 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	auto playback = CCSprite::createWithSpriteFrameName("GJ_rotationControlBtn01_001.png");
 	auto record = CCSprite::createWithSpriteFrameName("GJ_rotationControlBtn02_001.png");
 	auto info = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
+	auto checkOff = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
+	auto checkOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
 	info->setScale(0.6);
 
 	auto options = extension::CCScale9Sprite::create("GJ_square01-uhd.png");
@@ -390,6 +426,16 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	loadButton->setPositionX(options->getPositionX());
 	loadButton->setPositionY(210);
 
+	auto enabledButton = gd::CCMenuItemToggler::create((enabled) ? checkOn : checkOff, (enabled) ? checkOff : checkOn, menu, menu_selector(PauseLayer::callbacks::switchEnabled));
+	enabledButton->setPositionX(25);
+	enabledButton->setPositionY(95);
+	enabledButton->setScale(0.6);
+
+	auto enabledText = CCLabelBMFont::create("Enabled", "bigFont.fnt");
+	enabledText->setPositionX(75);
+	enabledText->setPositionY(96.5);
+	enabledText->setScale(0.5);
+
 	menu->setTag(10000);
 	ModeText->setTag(10001);
 	ModeButton->setTag(10002);
@@ -398,6 +444,8 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	ModeInfoButton->setTag(10005);
 	saveButton->setTag(10006);
 	loadButton->setTag(10007);
+	enabledButton->setTag(10008);
+	enabledText->setTag(10009);
 
 	menu->setZOrder(1000);
 	ModeText->setZOrder(1000);
@@ -407,6 +455,8 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	ModeInfoButton->setZOrder(1000);
 	saveButton->setZOrder(1000);
 	loadButton->setZOrder(1000);
+	enabledButton->setZOrder(1000);
+	enabledText->setZOrder(1000);
 
 	menu->addChild(ModeText);
 	menu->addChild(ModeButton);
@@ -415,6 +465,8 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	menu->addChild(ModeInfoButton);
 	menu->addChild(saveButton);
 	menu->addChild(loadButton);
+	menu->addChild(enabledButton);
+	menu->addChild(enabledText);
 	self->addChild(menu);
 
 	return result;
@@ -461,11 +513,5 @@ void Vbot::mem_init() {
 		(PVOID)(base + 0x20BF00),
 		PlayLayer::resetLevelHook,
 		(LPVOID*)&PlayLayer::resetLevel
-	);
-
-	MH_CreateHook(
-		(PVOID)(base + 0x20dc00),
-		PlayLayer::onExitHook,
-		(LPVOID*)&PlayLayer::onExit
 	);
 }
