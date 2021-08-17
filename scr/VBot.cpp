@@ -1,7 +1,6 @@
 #include "VBot.h"
 #include <fstream>
-#include <list>
-#include <vector>
+#include <direct.h>
 
 using namespace cocos2d;
 
@@ -9,87 +8,17 @@ size_t base = reinterpret_cast<size_t>(GetModuleHandle(0));
 
 std::list<float> pushCoords = {};
 std::list<float> releaseCoords = {};
-std::list<float> testCoords = {};
-std::list<float> checkPoints = {};
 
-bool enabled = false;
+bool enabled = true;
 bool mode = false; // False = Playback | True = Record
 int clicks = 0;
 bool waitingForFirstClick = false;
+bool autoSave = false;
+bool autoLoad = true;
+bool mouseDown = false;
 
-float getXPos() {
-	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
-	return playLayer->m_pPlayer1->position.x;
-}
 
-void SaveMacro() {
-	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-	std::fstream myfile;
-	myfile.open(levelName+".txt", std::ios::out);
-	
-	if (myfile.is_open()) {
-		myfile << pushCoords.size();
-		myfile << "\n";
-		for (float xpos : pushCoords)
-		{
-			myfile << std::setprecision(6) << std::fixed << xpos;
-			myfile << "\n";
-		}
-		for (float xpos : releaseCoords)
-		{
-			myfile << std::setprecision(6) << std::fixed << xpos;
-			myfile << "\n";
-		}
-
-		myfile << "End of macro\nYou shouldn't be here >:(";
-
-		gd::FLAlertLayer::create(nullptr, "Success!", "Ok", nullptr, "<cl>Successfully</c> saved macro: <cg>" + levelName + "</c>")->show();
-	}else{
-		gd::FLAlertLayer::create(nullptr, "Error", "Ok", nullptr, "<cr>Failed</c> to create file: <cg>" + levelName + "</c>" + "\n<cr>Reason:</c> Unknown\n<cg>Solution:</c> Unknown")->show();
-	}
-	myfile.close();
-}
-
-void LoadMacro() {
-	pushCoords.clear();
-	releaseCoords.clear();
-	std::string line;
-	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-	std::fstream file;
-	
-	file.open((levelName + ".txt"), std::ios::in);
-	
-	if (file.is_open()) {
-		getline(file, line); // Get the first line of the macro (Length of lists)
-		int len;
-		len = stoi(line);
-		for (int lineno = 1; lineno <= len; lineno++) {
-			getline(file, line);
-			pushCoords.insert(pushCoords.end(), stof(line));
-		}
-		for (int lineno = 1; lineno <= len; lineno++) {
-			getline(file, line);
-			releaseCoords.insert(releaseCoords.end(), stof(line));
-		}
-		file.close();
-
-		gd::FLAlertLayer::create(nullptr, "Success!", "Ok", nullptr, "Successfully loaded macro: <cg>" + levelName + "</c>")->show();
-	}
-	else {
-		gd::FLAlertLayer::create(nullptr, "Error", "ok", nullptr, 475, "An <cr>error</c> occured while loading the macro: <cg>" + levelName + "</c>" + "\nReason: The macro probably doesn't exist.\nSolution: Record a macro")->show();
-	}
-	
-}
-
-void switchModeFunc() {
-	mode = !mode;
-	/*if (!mode) {
-		auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-		LoadMacro(levelName + (std::string)".txt");
-	}*/
-}
-
-void Playback_Code(CCLayer* self, float xpos) {
+void PlayLayer::Playback_Code(CCLayer* self, float xpos) {
 
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
@@ -110,7 +39,7 @@ void Playback_Code(CCLayer* self, float xpos) {
 	}
 }
 
-void Record_Code(CCLayer* self, float xpos) {
+void PlayLayer::Record_Code(CCLayer* self, float xpos) {
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
 	auto MouseDownSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10008));
@@ -119,28 +48,8 @@ void Record_Code(CCLayer* self, float xpos) {
 	MouseDownSprite->setVisible(false);
 }
 
-void PauseLayer::callbacks::modeInfoWindow(CCObject*) {
-	gd::FLAlertLayer::create(nullptr, "Info", "OK", nullptr, "<cb>blue</c> - Playback Mode\n<cg>green</c> - Record Mode")->show();
-}
-
-void PauseLayer::callbacks::switchMode(CCObject*) {
-	switchModeFunc();
-}
-
-void PauseLayer::callbacks::switchEnabled(CCObject*) {
-	enabled = !enabled;
-}
-
-void PauseLayer::callbacks::SaveMacroCallback(CCObject*) {
-	SaveMacro();
-
-}
-
-void PauseLayer::callbacks::LoadMacroCallback(CCObject*) {
-	LoadMacro();
-}
-
 bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
+	mouseDown = true;
 	if (enabled) {
 		auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 		if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
@@ -153,7 +62,7 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 					waitingForFirstClick = false;
 				}
 
-				float xpos = getXPos();
+				float xpos = Vbot::getXPos();
 				auto xposInList = std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end();
 
 				if (!xposInList) {
@@ -172,6 +81,7 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 		}
 		else {
 			PlayLayer::pushButton(self, state, player);
+			clicks += 1;
 		}
 	}
 	else {
@@ -181,12 +91,13 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 }
 
 bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
+	mouseDown = false;
 	if (enabled) {
 		if (gd::GameManager::sharedState()->getPlayLayer() != nullptr) {
 			if (mode) {
 				PlayLayer::releaseButton(self, state, player);
 
-				float xpos = getXPos();
+				float xpos = Vbot::getXPos();
 				auto xposInList = std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end();
 
 				if (!xposInList) {
@@ -213,7 +124,9 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	auto result = init(self, GJGameLevel);
 	if (!result) return result;
 
-	float xpos = getXPos();
+	float xpos = Vbot::getXPos();
+
+	clicks = 0;
 
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
 
@@ -221,7 +134,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->setPositionX(0);
 	menu->setPositionY(13);
 
-	auto VBotText = CCLabelBMFont::create("VBot v1.6", "goldFont-uhd.fnt");
+	auto VBotText = CCLabelBMFont::create("VBot v1.7", "goldFont-uhd.fnt");
 	VBotText->setPositionX(5);
 	VBotText->setPositionY(52);
 	VBotText->setScale(0.6);
@@ -308,6 +221,8 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->addChild(EnabledText);
 	self->addChild(menu);
 
+	Vbot::AutoLoadMacro();
+
 	return result;
 }
 
@@ -316,7 +231,7 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
 
-	float xpos = getXPos();
+	float xpos = Vbot::getXPos();
 	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
 	auto xposCString = xposString.c_str();
 	auto XposText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10001));
@@ -326,14 +241,14 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	auto EnabledText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10009));
 	if (enabled) EnabledText->setString("State: Enabled"); else EnabledText->setString("State: Disabled");
 
-	if(enabled){
+	if (enabled){
 		if (!mode) {
 			ModeText->setString("Mode: Playback");
-			Playback_Code(self, xpos);
+			PlayLayer::Playback_Code(self, xpos);
 		}
 		if (mode) {
 			ModeText->setString("Mode: Record");
-			Record_Code(self, xpos);
+			PlayLayer::Record_Code(self, xpos);
 		}
 	}
 	
@@ -343,8 +258,8 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 
 void __fastcall PlayLayer::levelCompleteHook(void* self) {
 	levelComplete(self);
-	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
-	if (mode) switchModeFunc();
+	if (enabled) Vbot::AutoSaveMacro();
+	if (mode) Vbot::switchModeFunc();
 }
 
 void __fastcall PlayLayer::resetLevelHook(void* self) {
@@ -352,25 +267,69 @@ void __fastcall PlayLayer::resetLevelHook(void* self) {
 
 	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
 	auto isPracticeMode = playLayer->is_practice_mode;
-	float xpos = getXPos();
+	float xpos = Vbot::getXPos();
 
 	if (enabled && mode) {
+
 		if (isPracticeMode) {
 			// Push Coords
-			while (pushCoords.back() > xpos) {
+			while (pushCoords.back() >= xpos && pushCoords.size() != 0) {
 				pushCoords.pop_back();
 			}
 
 			// Release Coords
-			while (releaseCoords.back() > xpos) {
+			while (releaseCoords.back() >= xpos && releaseCoords.size() != 0) {
 				releaseCoords.pop_back();
 			}
 		}
-		else {
-			waitingForFirstClick = true;
-			clicks = 0;
-		}
 	}
+
+	if (enabled && !isPracticeMode) {
+		waitingForFirstClick = true;
+		clicks = 0;
+	}
+
+	if (enabled && mode && mouseDown) {
+		if (waitingForFirstClick) {
+			pushCoords.clear();
+			releaseCoords.clear();
+			waitingForFirstClick = false;
+		}
+
+		float xpos = Vbot::getXPos();
+		pushCoords.insert(pushCoords.end(), xpos);
+		clicks += 1;
+	}
+}
+
+
+void PauseLayer::callbacks::modeInfoWindow(CCObject*) {
+	gd::FLAlertLayer::create(nullptr, "Info", "OK", nullptr, "<cb>blue</c> - Playback Mode\n<cg>green</c> - Record Mode")->show();
+}
+
+void PauseLayer::callbacks::switchMode(CCObject*) {
+	Vbot::switchModeFunc();
+	if (!mode) Vbot::AutoLoadMacro();
+}
+
+void PauseLayer::callbacks::switchEnabled(CCObject*) {
+	enabled = !enabled;
+}
+
+void PauseLayer::callbacks::switchAutoSave(CCObject*) {
+	autoSave = !autoSave;
+}
+
+void PauseLayer::callbacks::switchAutoLoad(CCObject*) {
+	autoLoad = !autoLoad;
+}
+
+void PauseLayer::callbacks::SaveMacroCallback(CCObject*) {
+	Vbot::SaveMacro();
+}
+
+void PauseLayer::callbacks::LoadMacroCallback(CCObject*) {
+	Vbot::LoadMacro();
 }
 
 bool __fastcall PauseLayer::initHook(CCLayer* self) {
@@ -436,6 +395,26 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	enabledText->setPositionY(96.5);
 	enabledText->setScale(0.5);
 
+	auto autoSaveButton = gd::CCMenuItemToggler::create((autoSave) ? checkOn : checkOff, (autoSave) ? checkOff : checkOn, menu, menu_selector(PauseLayer::callbacks::switchAutoSave));
+	autoSaveButton->setPositionX(25);
+	autoSaveButton->setPositionY(165);
+	autoSaveButton->setScale(0.6);
+
+	auto autoSaveText = CCLabelBMFont::create("Auto Save", "bigFont.fnt");
+	autoSaveText->setPositionX(75);
+	autoSaveText->setPositionY(166.5);
+	autoSaveText->setScale(0.45);
+
+	auto autoLoadButton = gd::CCMenuItemToggler::create((autoLoad) ? checkOn : checkOff, (autoLoad) ? checkOff : checkOn, menu, menu_selector(PauseLayer::callbacks::switchAutoLoad));
+	autoLoadButton->setPositionX(25);
+	autoLoadButton->setPositionY(185);
+	autoLoadButton->setScale(0.6);
+
+	auto autoLoadText = CCLabelBMFont::create("Auto Load", "bigFont.fnt");
+	autoLoadText->setPositionX(75);
+	autoLoadText->setPositionY(186.5);
+	autoLoadText->setScale(0.45);
+
 	menu->setTag(10000);
 	ModeText->setTag(10001);
 	ModeButton->setTag(10002);
@@ -446,6 +425,10 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	loadButton->setTag(10007);
 	enabledButton->setTag(10008);
 	enabledText->setTag(10009);
+	autoLoadButton->setTag(10010);
+	autoLoadText->setTag(10011);
+	autoSaveButton->setTag(10012);
+	autoSaveText->setTag(10013);
 
 	menu->setZOrder(1000);
 	ModeText->setZOrder(1000);
@@ -457,6 +440,10 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	loadButton->setZOrder(1000);
 	enabledButton->setZOrder(1000);
 	enabledText->setZOrder(1000);
+	autoLoadButton->setZOrder(1000);
+	autoLoadText->setZOrder(1000);
+	autoSaveButton->setZOrder(1000);
+	autoSaveText->setZOrder(1000);
 
 	menu->addChild(ModeText);
 	menu->addChild(ModeButton);
@@ -467,9 +454,103 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	menu->addChild(loadButton);
 	menu->addChild(enabledButton);
 	menu->addChild(enabledText);
+	menu->addChild(autoLoadButton);
+	menu->addChild(autoLoadText);
+	menu->addChild(autoSaveButton);
+	menu->addChild(autoSaveText);
 	self->addChild(menu);
 
 	return result;
+}
+
+
+void Vbot::SaveMacro() {
+	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
+	std::fstream myfile;
+	_mkdir("VBot Macros");
+	myfile.open("VBot Macros/" + levelName + ".vbot", std::ios::out);
+
+	if (myfile.is_open()) {
+		myfile << pushCoords.size();
+		myfile << "\n";
+		for (float xpos : pushCoords)
+		{
+			myfile << std::setprecision(6) << std::fixed << xpos;
+			myfile << "\n";
+		}
+		myfile << releaseCoords.size();
+		myfile << "\n";
+		for (float xpos : releaseCoords)
+		{
+			myfile << std::setprecision(6) << std::fixed << xpos;
+			myfile << "\n";
+		}
+
+		myfile << "End of macro\nYou shouldn't be here >:(";
+
+		gd::FLAlertLayer::create(nullptr, "Success!", "Ok", nullptr, "<cl>Successfully</c> saved macro: <cg>" + levelName + "</c>")->show();
+	}
+	else {
+		gd::FLAlertLayer::create(nullptr, "Error", "Ok", nullptr, "<cr>Failed</c> to create file: <cg>" + levelName + "</c>" + "\n<cr>Reason:</c> Unknown\n<cg>Solution:</c> Unknown")->show();
+	}
+	myfile.close();
+}
+
+void Vbot::LoadMacro() {
+	_mkdir("VBot Macros");
+	pushCoords.clear();
+	releaseCoords.clear();
+	std::string line;
+	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
+	std::fstream file;
+
+	file.open(("VBot Macros/" + levelName + ".vbot"), std::ios::in);
+
+	if (file.is_open()) {
+		getline(file, line); // Get the length of the pushCoords list
+		int len;
+		len = stoi(line);
+		for (int lineno = 1; lineno <= len; lineno++) {
+			getline(file, line);
+			pushCoords.insert(pushCoords.end(), stof(line));
+		}
+		getline(file, line); // Get the length of the releaseCoords list
+		len = stoi(line);
+		for (int lineno = 1; lineno <= len; lineno++) {
+			getline(file, line);
+			releaseCoords.insert(releaseCoords.end(), stof(line));
+		}
+		file.close();
+
+		auto attempts = gd::GameManager::sharedState()->m_pPlayLayer->current_attempt;
+		auto isPaused = gd::GameManager::sharedState()->m_pPlayLayer->is_paused_again;
+
+		if (attempts > 1 || isPaused) {
+			gd::FLAlertLayer::create(nullptr, "Success!", "Ok", nullptr, "Successfully loaded macro: <cg>" + levelName + "</c>")->show();
+		}
+	}
+	else {
+		gd::FLAlertLayer::create(nullptr, "Error", "ok", nullptr, 475, "An <cr>error</c> occured while loading the macro: <cg>" + levelName + "</c>" + "\nReason: The macro probably doesn't exist.\nSolution: Record a macro")->show();
+	}
+
+}
+
+void Vbot::AutoSaveMacro() {
+	if (mode && autoSave) SaveMacro();
+}
+
+void Vbot::AutoLoadMacro() {
+	if (!mode && autoLoad) LoadMacro();
+}
+
+float Vbot::getXPos() {
+	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
+	return playLayer->m_pPlayer1->position.x;
+}
+
+void Vbot::switchModeFunc() {
+	mode = !mode;
+	clicks = 0;
 }
 
 void Vbot::mem_init() {

@@ -156,7 +156,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Promethean.h" />
     <ClInclude Include="cappuccino-sdk\incl\cocos2dx\actions\CCAction.h" />
     <ClInclude Include="cappuccino-sdk\incl\cocos2dx\actions\CCActionCamera.h" />
     <ClInclude Include="cappuccino-sdk\incl\cocos2dx\actions\CCActionCatmullRom.h" />

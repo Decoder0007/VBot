@@ -1161,9 +1161,6 @@
     <ClInclude Include="scr\Headers\VBot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Promethean.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cappuccino-sdk\incl\cocos2dx\ccFPSImages.c">
