@@ -11,13 +11,17 @@
 - Click indicator in playback mode
 - Saving macros
 - Loading macros
-- Proper Options Menu
-- (Buggy) Practice Recording (works 80% of the time)
+- Button on the pause menu
+- Proper UI
+- Practice Recording
+- Auto Save
+- Auto Load
+- FPS Bypass
+- Speedhack
+- Folder for macros
+- Option for Enabling / Disabling
 
 ## TODO
 
-- Auto Save
-- Auto Load
 - Safe Mode
-- FPS Bypass
-- Speedhack
+- Fix menu on the right
