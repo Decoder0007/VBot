@@ -1,4 +1,4 @@
-# 1.8
+# v1.8
 
 ## Added Features
 
@@ -14,7 +14,7 @@
 
 - Practice recording is loads more consistent
 
-# 1.7
+# v1.7
 
 welp i forgot to do this bit
 
