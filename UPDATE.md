@@ -1,3 +1,23 @@
+# 1.8
+
+## Added Features
+
+- Button on pause menu
+- New UI
+- Auto save
+- Auto load
+- Enabled switch
+- FPS Bypass
+- Speedhack
+
+## Bugfixes
+
+- Practice recording is loads more consistent
+
+# 1.7
+
+welp i forgot to do this bit
+
 # v1.6
 
 ## Added features
