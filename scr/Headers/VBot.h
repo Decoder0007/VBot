@@ -6,16 +6,6 @@
 
 using namespace cocos2d;
 
-namespace Vbot {
-    void mem_init();
-    void SaveMacro();
-    void LoadMacro();
-    void AutoSaveMacro();
-    void AutoLoadMacro();
-    float getXPos();
-    void switchModeFunc();
-}
-
 namespace PlayLayer {
 
     inline bool(__thiscall* init)(CCLayer* self, void* GJGameLevel);
@@ -44,8 +34,23 @@ namespace PauseLayer {
     inline bool(__thiscall* init)(CCLayer* self);
     bool __fastcall initHook(CCLayer* self);
 
+    class callbacks {
+    public:
+        
+        void OpenLayer(CCObject*);
+    };
+}
 
+namespace VBotLayer {
+    void init(CCLayer*);
     
+    void SaveMacro();
+    void LoadMacro();
+    void AutoSaveMacro();
+    void AutoLoadMacro();
+    float getXPos();
+    void switchModeFunc();
+    CCMenu* MakeMacroCard(const char* name, int cardNum);
 
     class callbacks {
     public:
@@ -56,5 +61,12 @@ namespace PauseLayer {
         void modeInfoWindow(CCObject*);
         void SaveMacroCallback(CCObject*);
         void LoadMacroCallback(CCObject*);
+        void SpeedHackSetSpeed(CCObject*);
+        void SetFPSCap(CCObject*);
+        void Close(CCObject*);
     };
+}
+
+namespace RunMod {
+    void mem_init();
 }

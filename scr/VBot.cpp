@@ -1,6 +1,8 @@
 #include "VBot.h"
 #include <fstream>
 #include <direct.h>
+#include "SpeedHack.h"
+#include "FPSBypass.h"
 
 using namespace cocos2d;
 
@@ -17,6 +19,7 @@ bool autoSave = false;
 bool autoLoad = true;
 bool mouseDown = false;
 
+CCMenu* BtnMenu = nullptr;
 
 void PlayLayer::Playback_Code(CCLayer* self, float xpos) {
 
@@ -38,7 +41,6 @@ void PlayLayer::Playback_Code(CCLayer* self, float xpos) {
 		MouseDownSprite->setVisible(false);
 	}
 }
-
 void PlayLayer::Record_Code(CCLayer* self, float xpos) {
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto MouseUpSprite = reinterpret_cast<CCSprite*>(menu->getChildByTag(10007));
@@ -47,7 +49,6 @@ void PlayLayer::Record_Code(CCLayer* self, float xpos) {
 	MouseUpSprite->setVisible(false);
 	MouseDownSprite->setVisible(false);
 }
-
 bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
 	mouseDown = true;
 	if (enabled) {
@@ -62,7 +63,7 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 					waitingForFirstClick = false;
 				}
 
-				float xpos = Vbot::getXPos();
+				float xpos = VBotLayer::getXPos();
 				auto xposInList = std::find(pushCoords.begin(), pushCoords.end(), xpos) != pushCoords.end();
 
 				if (!xposInList) {
@@ -89,7 +90,6 @@ bool __fastcall PlayLayer::pushButtonHook(CCLayer* self, uintptr_t, int state, b
 	}
 	return true;
 }
-
 bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state, bool player) {
 	mouseDown = false;
 	if (enabled) {
@@ -97,7 +97,7 @@ bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state
 			if (mode) {
 				PlayLayer::releaseButton(self, state, player);
 
-				float xpos = Vbot::getXPos();
+				float xpos = VBotLayer::getXPos();
 				auto xposInList = std::find(releaseCoords.begin(), releaseCoords.end(), xpos) != releaseCoords.end();
 
 				if (!xposInList) {
@@ -119,12 +119,11 @@ bool __fastcall PlayLayer::releaseButtonHook(CCLayer* self, uintptr_t, int state
 	}
 	return true;
 }
-
 bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	auto result = init(self, GJGameLevel);
 	if (!result) return result;
 
-	float xpos = Vbot::getXPos();
+	float xpos = VBotLayer::getXPos();
 
 	clicks = 0;
 
@@ -134,7 +133,7 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->setPositionX(0);
 	menu->setPositionY(13);
 
-	auto VBotText = CCLabelBMFont::create("VBot v1.7", "goldFont-uhd.fnt");
+	auto VBotText = CCLabelBMFont::create("VBot v1.8", "goldFont-uhd.fnt");
 	VBotText->setPositionX(5);
 	VBotText->setPositionY(52);
 	VBotText->setScale(0.6);
@@ -221,17 +220,16 @@ bool __fastcall PlayLayer::initHook(CCLayer* self, int edx, void* GJGameLevel) {
 	menu->addChild(EnabledText);
 	self->addChild(menu);
 
-	Vbot::AutoLoadMacro();
+	VBotLayer::AutoLoadMacro();
 
 	return result;
 }
-
 void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	PlayLayer::update(self, deltatime);
 	auto menu = reinterpret_cast<CCMenu*>(self->getChildByTag(10000));
 	auto ClicksText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10006));
 
-	float xpos = Vbot::getXPos();
+	float xpos = VBotLayer::getXPos();
 	auto xposString = (std::string)"Xpos: " + std::to_string((float)xpos);
 	auto xposCString = xposString.c_str();
 	auto XposText = reinterpret_cast<CCLabelBMFont*>(menu->getChildByTag(10001));
@@ -255,19 +253,17 @@ void __fastcall PlayLayer::updateHook(CCLayer* self, int edx, float deltatime) {
 	auto ClicksString = (std::string)"Clicks: " + std::to_string(clicks);
 	ClicksText->setString(ClicksString.c_str(), "goldFont-uhd.fnt");
 }
-
 void __fastcall PlayLayer::levelCompleteHook(void* self) {
 	levelComplete(self);
-	if (enabled) Vbot::AutoSaveMacro();
-	if (mode) Vbot::switchModeFunc();
+	if (enabled) VBotLayer::AutoSaveMacro();
+	if (mode) VBotLayer::switchModeFunc();
 }
-
 void __fastcall PlayLayer::resetLevelHook(void* self) {
 	resetLevel(self);
 
 	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
 	auto isPracticeMode = playLayer->is_practice_mode;
-	float xpos = Vbot::getXPos();
+	float xpos = VBotLayer::getXPos();
 
 	if (enabled && mode) {
 
@@ -282,61 +278,59 @@ void __fastcall PlayLayer::resetLevelHook(void* self) {
 				releaseCoords.pop_back();
 			}
 		}
-	}
 
-	if (enabled && !isPracticeMode) {
-		waitingForFirstClick = true;
-		clicks = 0;
-	}
-
-	if (enabled && mode && mouseDown) {
-		if (waitingForFirstClick) {
-			pushCoords.clear();
-			releaseCoords.clear();
-			waitingForFirstClick = false;
+		if (!isPracticeMode) {
+			waitingForFirstClick = true;
+			clicks = 0;
 		}
 
-		float xpos = Vbot::getXPos();
-		pushCoords.insert(pushCoords.end(), xpos);
-		clicks += 1;
+		if (mouseDown) {
+			if (waitingForFirstClick) {
+				pushCoords.clear();
+				releaseCoords.clear();
+				waitingForFirstClick = false;
+			}
+
+			float xpos = VBotLayer::getXPos();
+			pushCoords.insert(pushCoords.end(), xpos);
+			clicks += 1;
+		}
 	}
-}
-
-
-void PauseLayer::callbacks::modeInfoWindow(CCObject*) {
-	gd::FLAlertLayer::create(nullptr, "Info", "OK", nullptr, "<cb>blue</c> - Playback Mode\n<cg>green</c> - Record Mode")->show();
-}
-
-void PauseLayer::callbacks::switchMode(CCObject*) {
-	Vbot::switchModeFunc();
-	if (!mode) Vbot::AutoLoadMacro();
-}
-
-void PauseLayer::callbacks::switchEnabled(CCObject*) {
-	enabled = !enabled;
-}
-
-void PauseLayer::callbacks::switchAutoSave(CCObject*) {
-	autoSave = !autoSave;
-}
-
-void PauseLayer::callbacks::switchAutoLoad(CCObject*) {
-	autoLoad = !autoLoad;
-}
-
-void PauseLayer::callbacks::SaveMacroCallback(CCObject*) {
-	Vbot::SaveMacro();
-}
-
-void PauseLayer::callbacks::LoadMacroCallback(CCObject*) {
-	Vbot::LoadMacro();
 }
 
 bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	auto result = PauseLayer::init(self);
 	if (!result) return result;
 
+	BtnMenu = (CCMenu*)self->getChildren()->objectAtIndex(8); //8 is the menu that holds the play, practice, edit, exit, restart buttons
+
+	auto openLayerButtonSprite = gd::ButtonSprite::create("V", 0, false, "goldFont-uhd.fnt", "GJ_button_01-uhd.png", 0, 1);
+	openLayerButtonSprite->setScale(1.5);
+	auto openLayerButton = gd::CCMenuItemSpriteExtra::create(openLayerButtonSprite, BtnMenu, menu_selector(PauseLayer::callbacks::OpenLayer));
+	openLayerButton->setPositionX(0);
+	openLayerButton->setPositionY(0);
+
+	openLayerButton->setTag(1000);
+	openLayerButton->setZOrder(10000);
+
+	BtnMenu->addChild(openLayerButton);
+
+	BtnMenu->alignItemsHorizontallyWithPadding(5);
+
+	return result;
+}
+void PauseLayer::callbacks::OpenLayer(CCObject*) {
+
+	auto PauseLayer = (CCLayer*)(CCDirector::sharedDirector()->getRunningScene()->getChildren()->lastObject());
+	auto BtnMenu = (CCMenu*)(PauseLayer->getChildren()->objectAtIndex(8));
+
+	VBotLayer::init(PauseLayer);
+}
+
+void VBotLayer::init(CCLayer* self) {
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
+
+	BtnMenu->setPositionY(20000); //Remember to put this back when i add the close button
 
 	auto menu = CCMenu::create();
 	menu->setPositionX(0);
@@ -350,75 +344,206 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	info->setScale(0.6);
 
 	auto options = extension::CCScale9Sprite::create("GJ_square01-uhd.png");
-	options->setContentSize({ 110, 220 });
-	options->setPositionX(64);
-	options->setPositionY(185);
+	options->setContentSize({ winSize.width - 20, winSize.height - 10 });
+	options->setPosition({ winSize.width / 2, winSize.height / 2 });
 
 	auto VBotText = CCLabelBMFont::create("VBot Options", "goldFont-uhd.fnt");
-	VBotText->setPositionX(65);
-	VBotText->setPositionY(280);
-	VBotText->setScale(0.525);
+	VBotText->setPositionX(winSize.width / 2);
+	VBotText->setPositionY(winSize.height - 25);
+	VBotText->setScale(0.8);
 
 	auto ModeText = CCLabelBMFont::create("Switch Mode: ", "goldFont-uhd.fnt");
-	ModeText->setPositionX(50);
-	ModeText->setPositionY(250);
-	ModeText->setScale(0.4);
+	ModeText->setScale(0.6);
+	ModeText->setPositionX(25 + (ModeText->getScaledContentSize().width / 2));
+	ModeText->setPositionY(winSize.height - 50);
 
-	auto ModeButton = gd::CCMenuItemToggler::create((mode) ? playback : record, (mode) ? record : playback, menu, menu_selector(PauseLayer::callbacks::switchMode));
-	ModeButton->setPositionX(90);
-	ModeButton->setPositionY(250);
+	auto ModeButton = gd::CCMenuItemToggler::create((mode) ? playback : record, (mode) ? record : playback, menu, menu_selector(VBotLayer::callbacks::switchMode));
 	ModeButton->setScale(0.6);
+	ModeButton->setPositionX(25 + (ModeText->getScaledContentSize().width) + 10);
+	ModeButton->setPositionY(winSize.height - 50);
 
-	auto ModeInfoButton = gd::CCMenuItemSpriteExtra::create(info, menu, menu_selector(PauseLayer::callbacks::modeInfoWindow));
-	ModeInfoButton->setPositionX(105);
-	ModeInfoButton->setPositionY(250);
+	auto ModeInfoButton = gd::CCMenuItemSpriteExtra::create(info, menu, menu_selector(VBotLayer::callbacks::modeInfoWindow));
+	ModeInfoButton->setPositionX(25 + ModeText->getScaledContentSize().width + 10 + ModeButton->getScaledContentSize().width);
+	ModeInfoButton->setPositionY(winSize.height - 50);
 
 	auto saveButtonSprite = gd::ButtonSprite::create("Save Macro", 0, false, "bigFont-uhd.fnt", "GJ_button_03-uhd.png", 0, 1);
-	saveButtonSprite->setScale(0.4);
-	auto saveButton = gd::CCMenuItemSpriteExtra::create(saveButtonSprite, menu, menu_selector(PauseLayer::callbacks::SaveMacroCallback));
-	saveButton->setPositionX(options->getPositionX());
-	saveButton->setPositionY(230);
+	saveButtonSprite->setScale(0.5);
+	auto saveButton = gd::CCMenuItemSpriteExtra::create(saveButtonSprite, menu, menu_selector(VBotLayer::callbacks::SaveMacroCallback));
+	saveButton->setPositionX(95);
+	saveButton->setPositionY(245);
 
 	auto loadButtonSprite = gd::ButtonSprite::create("Load Macro", 0, false, "bigFont-uhd.fnt", "GJ_button_02-uhd.png", 0, 1);
-	loadButtonSprite->setScale(0.4);
-	auto loadButton = gd::CCMenuItemSpriteExtra::create(loadButtonSprite, menu, menu_selector(PauseLayer::callbacks::LoadMacroCallback));
-	loadButton->setPositionX(options->getPositionX());
-	loadButton->setPositionY(210);
+	loadButtonSprite->setScale(0.5);
+	auto loadButton = gd::CCMenuItemSpriteExtra::create(loadButtonSprite, menu, menu_selector(VBotLayer::callbacks::LoadMacroCallback));
+	loadButton->setPositionX(95);
+	loadButton->setPositionY(220);
 
-	auto enabledButton = gd::CCMenuItemToggler::create((enabled) ? checkOn : checkOff, (enabled) ? checkOff : checkOn, menu, menu_selector(PauseLayer::callbacks::switchEnabled));
-	enabledButton->setPositionX(25);
-	enabledButton->setPositionY(95);
+	auto enabledButton = gd::CCMenuItemToggler::create((enabled) ? checkOn : checkOff, (enabled) ? checkOff : checkOn, menu, menu_selector(VBotLayer::callbacks::switchEnabled));
+	enabledButton->setPositionX(45);
+	enabledButton->setPositionY(145);
 	enabledButton->setScale(0.6);
 
 	auto enabledText = CCLabelBMFont::create("Enabled", "bigFont.fnt");
-	enabledText->setPositionX(75);
-	enabledText->setPositionY(96.5);
+	enabledText->setPositionX(95);
+	enabledText->setPositionY(146.5);
 	enabledText->setScale(0.5);
 
-	auto autoSaveButton = gd::CCMenuItemToggler::create((autoSave) ? checkOn : checkOff, (autoSave) ? checkOff : checkOn, menu, menu_selector(PauseLayer::callbacks::switchAutoSave));
-	autoSaveButton->setPositionX(25);
+	auto autoSaveButton = gd::CCMenuItemToggler::create((autoSave) ? checkOn : checkOff, (autoSave) ? checkOff : checkOn, menu, menu_selector(VBotLayer::callbacks::switchAutoSave));
+	autoSaveButton->setPositionX(45);
 	autoSaveButton->setPositionY(165);
 	autoSaveButton->setScale(0.6);
 
 	auto autoSaveText = CCLabelBMFont::create("Auto Save", "bigFont.fnt");
-	autoSaveText->setPositionX(75);
+	autoSaveText->setPositionX(100);
 	autoSaveText->setPositionY(166.5);
 	autoSaveText->setScale(0.45);
 
-	auto autoLoadButton = gd::CCMenuItemToggler::create((autoLoad) ? checkOn : checkOff, (autoLoad) ? checkOff : checkOn, menu, menu_selector(PauseLayer::callbacks::switchAutoLoad));
-	autoLoadButton->setPositionX(25);
+	auto autoLoadButton = gd::CCMenuItemToggler::create((autoLoad) ? checkOn : checkOff, (autoLoad) ? checkOff : checkOn, menu, menu_selector(VBotLayer::callbacks::switchAutoLoad));
+	autoLoadButton->setPositionX(45);
 	autoLoadButton->setPositionY(185);
 	autoLoadButton->setScale(0.6);
 
 	auto autoLoadText = CCLabelBMFont::create("Auto Load", "bigFont.fnt");
-	autoLoadText->setPositionX(75);
+	autoLoadText->setPositionX(100);
 	autoLoadText->setPositionY(186.5);
 	autoLoadText->setScale(0.45);
+
+	auto MacroMenu = CCMenu::create();
+	MacroMenu->setPosition({ 0, 0 });
+
+	auto MacroList = extension::CCScale9Sprite::create("GJ_square01-uhd.png");
+	MacroList->setContentSize({ 160, 250 });
+	MacroList->setAnchorPoint({ 0.5, 0.5 });
+	MacroList->setPosition({ (winSize.width / 5) * 4, winSize.height / 2 });
+
+	auto MacroListC1 = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+	MacroListC1->setRotation(0);
+	MacroListC1->setPosition({ MacroList->getPositionX() - (MacroList->getScaledContentSize().width / 2), MacroList->getPositionY() - (MacroList->getScaledContentSize().height / 2) });
+	MacroListC1->setAnchorPoint({ 0, 0 });
+	MacroListC1->setScale(0.7);
+	MacroListC1->setZOrder(1002);
+
+	auto MacroListC2 = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+	MacroListC2->setRotationX(180);
+	MacroListC2->setPosition({ MacroList->getPositionX() - (MacroList->getScaledContentSize().width / 2), MacroList->getPositionY() + (MacroList->getScaledContentSize().height / 2) });
+	MacroListC2->setAnchorPoint({ 0, 0 });
+	MacroListC2->setScale(0.7);
+	MacroListC2->setZOrder(1002);
+
+	auto MacroListC3 = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+	MacroListC3->setRotation(180);
+	MacroListC3->setPosition({ MacroList->getPositionX() + (MacroList->getScaledContentSize().width / 2), MacroList->getPositionY() + (MacroList->getScaledContentSize().height / 2) });
+	MacroListC3->setAnchorPoint({ 0, 0 });
+	MacroListC3->setScale(0.7);
+	MacroListC3->setZOrder(1002);
+
+	auto MacroListC4 = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+	MacroListC4->setRotationY(180);
+	MacroListC4->setPosition({ MacroList->getPositionX() + (MacroList->getScaledContentSize().width / 2), MacroList->getPositionY() - (MacroList->getScaledContentSize().height / 2) });
+	MacroListC4->setAnchorPoint({ 0, 0 });
+	MacroListC4->setScale(0.7);
+	MacroListC4->setZOrder(1002);
+
+	MacroMenu->addChild(MacroList);
+	MacroMenu->addChild(MacroListC1);
+	MacroMenu->addChild(MacroListC2);
+	MacroMenu->addChild(MacroListC3);
+	MacroMenu->addChild(MacroListC4);
+
+	for (int i = 0; i < 5; i++)
+	{
+		MacroMenu->addChild(VBotLayer::MakeMacroCard("test", i));
+	}
+	
+
+
+	auto speedMenu = CCMenu::create();
+
+	auto speedhackText = CCLabelBMFont::create("Speedhack", "bigFont-uhd.fnt");
+	auto speedhackInput = gd::CCTextInputNode::create("Speed", speedMenu, "bigFont-uhd.fnt", 50, 30);
+	auto speedhackInputBG = extension::CCScale9Sprite::create("square02_small.png");
+	auto speedhackSetSpeedSprite = gd::ButtonSprite::create("Set Speed", 0, false, "bigFont-uhd.fnt", "GJ_button_01-uhd.png", 28, 0.25);
+	auto speedhackSetSpeedButton = gd::CCMenuItemSpriteExtra::create(speedhackSetSpeedSprite, speedMenu, menu_selector(VBotLayer::callbacks::SpeedHackSetSpeed));
+	
+	speedhackText->setScale(0.5);
+	speedhackText->setZOrder(1);
+
+	speedhackInput->setScale(0.5);
+	speedhackInput->setAnchorPoint({ 0, 0 });
+	speedhackInput->setZOrder(2);
+	speedhackInput->setAllowedChars("0123456789.");
+
+	speedhackSetSpeedButton->setZOrder(1);
+
+	speedhackInputBG->setContentSize({ 55, 27 });
+	speedhackInputBG->setZOrder(1);
+	speedhackInputBG->setColor({ 0, 0, 0 });
+	speedhackInputBG->setOpacity(100);
+
+	speedhackText->setTag(1);
+	speedMenu->addChild(speedhackText);
+
+	speedhackInputBG->setTag(4);
+	speedMenu->addChild(speedhackInputBG);
+
+	speedhackSetSpeedButton->setTag(3);
+	speedMenu->addChild(speedhackSetSpeedButton);
+
+	speedMenu->alignItemsHorizontallyWithPadding(10);
+
+	speedhackInput->setTag(2);
+	speedhackInput->setPosition(speedhackInputBG->getPosition());
+	speedMenu->addChild(speedhackInput);
+
+
+	auto fpsMenu = CCMenu::create();
+
+	auto setFPSText = CCLabelBMFont::create("FPS Bypass", "bigFont-uhd.fnt");
+	auto setFPSInput = gd::CCTextInputNode::create("FPS", fpsMenu, "bigFont-uhd.fnt", 50, 30);
+	auto setFPSInputBG = extension::CCScale9Sprite::create("square02_small.png");
+	auto setFPSCapSprite = gd::ButtonSprite::create("Set FPS", 0, false, "bigFont-uhd.fnt", "GJ_button_01-uhd.png", 28, 0.25);
+	auto setFPSCapButton = gd::CCMenuItemSpriteExtra::create(setFPSCapSprite, fpsMenu, menu_selector(VBotLayer::callbacks::SetFPSCap));
+	
+	setFPSText->setScale(0.5);
+	setFPSText->setZOrder(1);
+
+	setFPSInput->setScale(0.5);
+	setFPSInput->setAnchorPoint({ 0, 0 });
+	setFPSInput->setZOrder(2);
+	setFPSInput->setAllowedChars("0123456789");
+
+	setFPSCapButton->setZOrder(1);
+
+	setFPSInputBG->setContentSize({ 40, 27 });
+	setFPSInputBG->setZOrder(1);
+	setFPSInputBG->setColor({ 0, 0, 0 });
+	setFPSInputBG->setOpacity(100);
+
+	setFPSText->setTag(1);
+	fpsMenu->addChild(setFPSText);
+	setFPSInput->setTag(2);
+	fpsMenu->addChild(setFPSInput);
+	setFPSCapButton->setTag(3);
+	fpsMenu->addChild(setFPSCapButton);
+	fpsMenu->alignItemsHorizontallyWithPadding(10);
+	setFPSInputBG->setTag(4);
+	setFPSInputBG->setPosition(setFPSInput->getPosition());
+	fpsMenu->addChild(setFPSInputBG);
+	auto setxto = (setFPSCapButton->getPositionX() + (setFPSCapButton->getScaledContentSize().width / 2)) - (setFPSText->getPositionX() - (setFPSText->getScaledContentSize().width / 2)) / 2;
+	fpsMenu->setPosition({ setxto, 80 });
+	speedMenu->setPosition({ fpsMenu->getPositionX(), 110 });
+
+
+	auto closeLayerBtnSprite = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
+	auto closeLayerBtn = CCMenuItemSpriteExtra::create(closeLayerBtnSprite, closeLayerBtnSprite, menu, menu_selector(VBotLayer::callbacks::Close));
+	closeLayerBtn->setScale(0.65);
+	closeLayerBtn->setPosition({ 20, winSize.height - 10 });
+
 
 	menu->setTag(10000);
 	ModeText->setTag(10001);
 	ModeButton->setTag(10002);
-    options->setTag(10003);
+	options->setTag(10003);
 	VBotText->setTag(10004);
 	ModeInfoButton->setTag(10005);
 	saveButton->setTag(10006);
@@ -429,6 +554,10 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	autoLoadText->setTag(10011);
 	autoSaveButton->setTag(10012);
 	autoSaveText->setTag(10013);
+	MacroMenu->setTag(10014);
+	speedMenu->setTag(10015);
+	fpsMenu->setTag(10016);
+	closeLayerBtn->setTag(10017);
 
 	menu->setZOrder(1000);
 	ModeText->setZOrder(1000);
@@ -444,6 +573,10 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	autoLoadText->setZOrder(1000);
 	autoSaveButton->setZOrder(1000);
 	autoSaveText->setZOrder(1000);
+	MacroMenu->setZOrder(1000);
+	speedMenu->setZOrder(1000);
+	fpsMenu->setZOrder(1000);
+	closeLayerBtn->setZOrder(1001);
 
 	menu->addChild(ModeText);
 	menu->addChild(ModeButton);
@@ -458,13 +591,13 @@ bool __fastcall PauseLayer::initHook(CCLayer* self) {
 	menu->addChild(autoLoadText);
 	menu->addChild(autoSaveButton);
 	menu->addChild(autoSaveText);
+	menu->addChild(MacroMenu);
+	menu->addChild(speedMenu);
+	menu->addChild(fpsMenu);
+	menu->addChild(closeLayerBtn);
 	self->addChild(menu);
-
-	return result;
 }
-
-
-void Vbot::SaveMacro() {
+void VBotLayer::SaveMacro() {
 	auto levelName = gd::GameManager::sharedState()->m_pPlayLayer->level->levelName;
 	std::fstream myfile;
 	_mkdir("VBot Macros");
@@ -495,8 +628,7 @@ void Vbot::SaveMacro() {
 	}
 	myfile.close();
 }
-
-void Vbot::LoadMacro() {
+void VBotLayer::LoadMacro() {
 	_mkdir("VBot Macros");
 	pushCoords.clear();
 	releaseCoords.clear();
@@ -534,26 +666,81 @@ void Vbot::LoadMacro() {
 	}
 
 }
-
-void Vbot::AutoSaveMacro() {
+void VBotLayer::AutoSaveMacro() {
 	if (mode && autoSave) SaveMacro();
 }
-
-void Vbot::AutoLoadMacro() {
+void VBotLayer::AutoLoadMacro() {
 	if (!mode && autoLoad) LoadMacro();
 }
-
-float Vbot::getXPos() {
+float VBotLayer::getXPos() {
 	gd::PlayLayer* playLayer = gd::GameManager::sharedState()->getPlayLayer();
 	return playLayer->m_pPlayer1->position.x;
 }
-
-void Vbot::switchModeFunc() {
+void VBotLayer::switchModeFunc() {
 	mode = !mode;
 	clicks = 0;
 }
+CCMenu* VBotLayer::MakeMacroCard(const char* , int cardNum) {
+	auto menu = CCMenu::create();
+	auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-void Vbot::mem_init() {
+	auto MacroCard = extension::CCScale9Sprite::create("GJ_square01-uhd.png");
+	MacroCard->setContentSize({ 145, 50 });
+	MacroCard->setAnchorPoint({ 0.5, 0.5 });
+	MacroCard->setPositionX(((winSize.width / 5)*4)-(winSize.width / 2));
+	MacroCard->setPositionY((winSize.height / 2 )-(50 * cardNum)-60);
+
+	menu->addChild(MacroCard);
+
+	return menu;
+
+}
+void VBotLayer::callbacks::modeInfoWindow(CCObject*) {
+	gd::FLAlertLayer::create(nullptr, "Info", "OK", nullptr, "<cb>blue</c> - Playback Mode\n<cg>green</c> - Record Mode")->show();
+}
+void VBotLayer::callbacks::switchMode(CCObject*) {
+	VBotLayer::switchModeFunc();
+	if (!mode) VBotLayer::AutoLoadMacro();
+}
+void VBotLayer::callbacks::switchEnabled(CCObject*) {
+	enabled = !enabled;
+}
+void VBotLayer::callbacks::switchAutoSave(CCObject*) {
+	autoSave = !autoSave;
+}
+void VBotLayer::callbacks::switchAutoLoad(CCObject*) {
+	autoLoad = !autoLoad;
+}
+void VBotLayer::callbacks::SaveMacroCallback(CCObject*) {
+	VBotLayer::SaveMacro();
+}
+void VBotLayer::callbacks::LoadMacroCallback(CCObject*) {
+	VBotLayer::LoadMacro();
+}
+void VBotLayer::callbacks::SpeedHackSetSpeed(CCObject*) {
+	CCLayer* pauseLayer = (CCLayer*)CCDirector::sharedDirector()->getRunningScene()->getChildren()->lastObject();
+	CCMenu* menu = (CCMenu*)pauseLayer->getChildByTag(10000);
+	CCMenu* speedMenu = (CCMenu*)menu->getChildByTag(10015);
+	gd::CCTextInputNode* setSpeedInput = (gd::CCTextInputNode*)speedMenu->getChildByTag(2);
+	float speed = (float)std::stof(setSpeedInput->getString());
+	Speedhack::InitializeSpeedHack(speed);
+}
+void VBotLayer::callbacks::SetFPSCap(CCObject*) {
+	CCLayer* pauseLayer = (CCLayer*)CCDirector::sharedDirector()->getRunningScene()->getChildren()->lastObject();
+	CCMenu* menu = (CCMenu*)pauseLayer->getChildByTag(10000);
+	CCMenu* fpsMenu = (CCMenu*)menu->getChildByTag(10016);
+	gd::CCTextInputNode* setFPSInput = (gd::CCTextInputNode*)fpsMenu->getChildByTag(2);
+
+	int fpscap = (int)std::stoi(setFPSInput->getString());
+	FPSBypass::SetFPS(fpscap);
+}
+void VBotLayer::callbacks::Close(CCObject*) {
+	CCLayer* pauseLayer = (CCLayer*)CCDirector::sharedDirector()->getRunningScene()->getChildren()->lastObject();
+	pauseLayer->removeChildByTag(10000);
+	BtnMenu->setPositionY(130); //Move back buttons
+}
+
+void RunMod::mem_init() {
 	MH_CreateHook(
 		(PVOID)(base + 0x01FB780),
 		PlayLayer::initHook,

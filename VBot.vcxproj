@@ -109,7 +109,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)cappuccino-sdk\incl\cocos2dx;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\kazmath\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\win32;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32;$(SolutionDir)cappuccino-sdk\incl\extensions;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32\OGLES;$(SolutionDir)scr\Headers;$(SolutionDir)scr\Libs;$(SolutionDir)scr;$(SolutionDir)gd.h\include;$(SolutionDir)gd.h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)scr\Headers\Detours;$(SolutionDir)cappuccino-sdk\incl\cocos2dx;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\kazmath\include;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\win32;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32;$(SolutionDir)cappuccino-sdk\incl\extensions;$(SolutionDir)cappuccino-sdk\incl\cocos2dx\platform\third_party\win32\OGLES;$(SolutionDir)scr\Headers;$(SolutionDir)scr\Libs;$(SolutionDir)scr;$(SolutionDir)gd.h\include;$(SolutionDir)gd.h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,6 +120,10 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>$(SolutionDir)cappuccino-sdk\lib\cappuccino.lib;$(SolutionDir)cappuccino-sdk\lib\libExtensions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "C:\Users\Harry\Desktop\VBot\Release\VBot.dll" "E:\Games\SteamGames\steamapps\common\Geometry Dash\mods"
+start "" "steam://rungameid/322170"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -532,9 +536,11 @@
     <ClInclude Include="cappuccino-sdk\incl\extensions\spine\SlotData.h" />
     <ClInclude Include="cappuccino-sdk\incl\extensions\spine\spine-cocos2dx.h" />
     <ClInclude Include="cappuccino-sdk\incl\extensions\spine\spine.h" />
+    <ClInclude Include="scr\Headers\FPSBypass.h" />
     <ClInclude Include="scr\Headers\framework.h" />
     <ClInclude Include="scr\Headers\MinHook.h" />
     <ClInclude Include="scr\Headers\pch.h" />
+    <ClInclude Include="scr\Headers\SpeedHack.h" />
     <ClInclude Include="scr\Headers\VBot.h" />
   </ItemGroup>
   <ItemGroup>
@@ -554,10 +560,13 @@
     <ClCompile Include="cappuccino-sdk\incl\cocos2dx\kazmath\src\vec3.c" />
     <ClCompile Include="cappuccino-sdk\incl\cocos2dx\kazmath\src\vec4.c" />
     <ClCompile Include="scr\dllmain.cpp" />
+    <ClCompile Include="scr\FPSBypass.cpp" />
     <ClCompile Include="scr\pch.cpp" />
+    <ClCompile Include="scr\SpeedHack.cpp" />
     <ClCompile Include="scr\VBot.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="..\VHacks\scr\Headers\Detours\detours.lib" />
     <Library Include="scr\Libs\libMinHook-x86-v141-mtd.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

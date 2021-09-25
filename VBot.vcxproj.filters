@@ -1161,6 +1161,12 @@
     <ClInclude Include="scr\Headers\VBot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="scr\Headers\SpeedHack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scr\Headers\FPSBypass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cappuccino-sdk\incl\cocos2dx\ccFPSImages.c">
@@ -1217,9 +1223,18 @@
     <ClCompile Include="scr\VBot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scr\SpeedHack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scr\FPSBypass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="scr\Libs\libMinHook-x86-v141-mtd.lib">
+      <Filter>Libs</Filter>
+    </Library>
+    <Library Include="..\VHacks\scr\Headers\Detours\detours.lib">
       <Filter>Libs</Filter>
     </Library>
   </ItemGroup>
