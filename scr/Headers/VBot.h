@@ -6,10 +6,15 @@
 
 using namespace cocos2d;
 
+namespace MenuLayer {
+    inline bool(__thiscall* init)(CCLayer* self);
+    bool __fastcall initHook(CCLayer* self);
+}
+
 namespace PlayLayer {
 
     inline bool(__thiscall* init)(CCLayer* self, void* GJGameLevel);
-    bool __fastcall initHook(CCLayer* self, int edx, void* GJGameLevel);
+    bool __fastcall initHook(CCLayer* self, int edx, gd::GJGameLevel* GJGameLevel);
 
     inline void(__thiscall* update)(CCLayer* self, float deltatime);
     void __fastcall updateHook(CCLayer* self, int edx, float deltatime);
@@ -26,8 +31,14 @@ namespace PlayLayer {
     inline void(__thiscall* resetLevel)(void* self);
     void __fastcall resetLevelHook(void* self);
 
-    void Playback_Code(CCLayer* self, float xpos);
-    void Record_Code(CCLayer* self, float xpos);
+    inline int(__thiscall* createCheckpoint)(void* self);
+    int __fastcall createCheckpointHook(void* self);
+
+    inline int(__thiscall* removeCheckpoint)(void* self);
+    int __fastcall removeCheckpointHook(void* self);
+
+    void Playback_Code(CCLayer* self);
+    void Record_Code(CCLayer* self);
 }
 
 namespace PauseLayer {
@@ -44,13 +55,12 @@ namespace PauseLayer {
 namespace VBotLayer {
     void init(CCLayer*);
     
-    void SaveMacro();
-    void LoadMacro();
-    void AutoSaveMacro();
-    void AutoLoadMacro();
+    void SaveMacro(std::string);
+    void LoadMacro(std::string);
+    void LoadMacroStartup(std::string);
     float getXPos();
     void switchModeFunc();
-    CCMenu* MakeMacroCard(const char* name, int cardNum);
+    void CreateMacroList(CCMenu*);
 
     class callbacks {
     public:
@@ -58,12 +68,23 @@ namespace VBotLayer {
         void switchEnabled(CCObject*);
         void switchAutoSave(CCObject*);
         void switchAutoLoad(CCObject*);
+        void switchFrameMode(CCObject*);
         void modeInfoWindow(CCObject*);
         void SaveMacroCallback(CCObject*);
         void LoadMacroCallback(CCObject*);
         void SpeedHackSetSpeed(CCObject*);
         void SetFPSCap(CCObject*);
         void Close(CCObject*);
+        void Del1(CCObject*);
+        void Del2(CCObject*);
+        void Del3(CCObject*);
+        void Del4(CCObject*);
+        void Del5(CCObject*);
+        void Load1(CCObject*);
+        void Load2(CCObject*);
+        void Load3(CCObject*);
+        void Load4(CCObject*);
+        void Load5(CCObject*);
     };
 }
 

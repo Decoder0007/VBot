@@ -121,7 +121,7 @@
       <AdditionalDependencies>$(SolutionDir)cappuccino-sdk\lib\cappuccino.lib;$(SolutionDir)cappuccino-sdk\lib\libExtensions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "C:\Users\Harry\Desktop\VBot\Release\VBot.dll" "E:\Games\SteamGames\steamapps\common\Geometry Dash\mods"
+      <Command>copy "C:\Users\Harry\Desktop\VBot\Release\VBot.dll" "E:\Games\SteamGames\steamapps\common\Geometry Dash\extensions"
 start "" "steam://rungameid/322170"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
