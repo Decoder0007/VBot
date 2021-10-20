@@ -1,3 +1,24 @@
+# v1.9
+
+## Added Features
+
+- Frame Mode
+- Fixed practice mode... to an extent
+- Deleting macros... to an extent
+- Loading specific macros... to an extent
+- New folder structure
+    You will have to move your macros from the VBot Macros
+    folder and into "VBot/Macros" this directory gets
+    created automatically when you save a macro.
+
+# v1.8
+
+When you forget to pull before you push
+
+# v1.7
+
+When you forget to pull before you push
+
 # v1.6
 
 ## Added features
