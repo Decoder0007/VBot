@@ -12,12 +12,13 @@
 - Saving macros
 - Loading macros
 - Proper Options Menu
-- (Buggy) Practice Recording (works 80% of the time)
+- (Buggy) Practice Recording (works 95% of the time)
+- Auto Save
+- Auto load
+- Speedhack
+- FPS Bypass
 
 ## TODO
 
-- Auto Save
-- Auto Load
 - Safe Mode
-- FPS Bypass
-- Speedhack
+- Frame Advance
