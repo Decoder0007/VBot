@@ -11,6 +11,8 @@
 - Click indicator in playback mode
 - Saving macros
 - Loading macros
+- Loading specific macros
+- Deleting macros (to an extent)
 - Proper Options Menu
 - (Buggy) Practice Recording (works 95% of the time)
 - Auto Save
