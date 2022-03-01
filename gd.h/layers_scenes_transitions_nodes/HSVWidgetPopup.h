@@ -4,7 +4,7 @@
 #include <gd.h>
 
 namespace gd {
-    class ConfigureHSVWidget : public cocos2d::CCNode {
+    class GDH_DLL ConfigureHSVWidget : public cocos2d::CCNode {
         public:
             cocos2d::CCLabelBMFont* m_pHueLabel;
             cocos2d::CCLabelBMFont* m_pSaturationLabel;
@@ -14,12 +14,13 @@ namespace gd {
             gd::Slider* m_pSaturationSlider;
             gd::Slider* m_pBrightnessSlider;
 
-            float m_fHueValue;
-            float m_fSaturationValue;
-            float m_fBrightnessValue;
+            cocos2d::ccHSVValue m_obValue;
+    };
 
-            bool m_bAbsoluteSaturation;
-            bool m_bAbsoluteBrightness;
+    class GDH_DLL HSVWidgetPopup : public gd::FLAlertLayer {
+        public:
+            ConfigureHSVWidget* m_pConfigureWidget;
+            HSVWidgetPopupDelegate* m_pDelegate;
     };
 }
 

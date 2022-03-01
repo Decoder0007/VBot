@@ -4,7 +4,7 @@
 #include <gd.h>
 
 namespace gd {
-	class CCAnimatedSprite : public cocos2d::CCSprite {
+	class GDH_DLL CCAnimatedSprite : public cocos2d::CCSprite {
 	protected:
 		std::string m_sUnknown1;
 		std::string m_sUnknown2;
@@ -22,10 +22,14 @@ namespace gd {
 		//own vtable
 		virtual void animationFinished(const char*) {}
 		virtual void animationFinishedO(cocos2d::CCObject*) {}
+
+		void runAnimation(std::string name) {
+			reinterpret_cast<void(__thiscall*)(CCAnimatedSprite*, std::string)>(base + 0x14f60)(this, name);
+		}
 	};
 
-	class AnimatedSpriteDelegate {
-		virtual void animationFinished(const char*);
+	class GDH_DLL AnimatedSpriteDelegate {
+		virtual void animationFinished(const char*) {}
 	};
 }
 

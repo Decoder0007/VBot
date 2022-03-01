@@ -7,7 +7,7 @@ namespace gd {
     class Slider;
     class GJScaleControlDelegate;
 
-    class GJScaleControl : public cocos2d::CCLayer {
+    class GDH_DLL GJScaleControl : public cocos2d::CCLayer {
         public:
             gd::Slider* m_pSlider;
             unsigned int m_nTouchID;
@@ -22,6 +22,16 @@ namespace gd {
                 reinterpret_cast<void(__fastcall*)(GJScaleControl*)>(
                     base + 0x94990
                 )(this);
+            }
+
+            void loadValues(GameObject* obj, cocos2d::CCArray* objs) {
+                reinterpret_cast<void(__thiscall*)(
+                    GJScaleControl*, GameObject*, cocos2d::CCArray*
+                )>(
+                    base + 0x94590
+                )(
+                    this, obj, objs
+                );
             }
     };
 

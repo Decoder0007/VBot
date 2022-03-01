@@ -39,6 +39,9 @@ namespace PlayLayer {
 
     void Playback_Code(CCLayer* self);
     void Record_Code(CCLayer* self);
+    void StraightFly(CCLayer* self);
+    void AutoWave(CCLayer* self);
+    void AI(CCLayer* self);
 }
 
 namespace PauseLayer {
@@ -47,7 +50,6 @@ namespace PauseLayer {
 
     class callbacks {
     public:
-        
         void OpenLayer(CCObject*);
     };
 }
@@ -57,7 +59,6 @@ namespace VBotLayer {
     
     void SaveMacro(std::string);
     void LoadMacro(std::string);
-    void LoadMacroStartup(std::string);
     float getXPos();
     void switchModeFunc();
     void CreateMacroList(CCMenu*);
@@ -69,6 +70,9 @@ namespace VBotLayer {
         void switchAutoSave(CCObject*);
         void switchAutoLoad(CCObject*);
         void switchFrameMode(CCObject*);
+        void switchFrameAdvance(CCObject*);
+        void switchHideUI(CCObject*);
+        void switchMiniUI(CCObject*);
         void modeInfoWindow(CCObject*);
         void SaveMacroCallback(CCObject*);
         void LoadMacroCallback(CCObject*);

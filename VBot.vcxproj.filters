@@ -1167,6 +1167,9 @@
     <ClInclude Include="scr\Headers\FPSBypass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="scr\Headers\FPSMultiplier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cappuccino-sdk\incl\cocos2dx\ccFPSImages.c">
@@ -1227,6 +1230,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="scr\FPSBypass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scr\FPSMultiplier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

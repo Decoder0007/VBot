@@ -122,7 +122,7 @@
     </Link>
     <PostBuildEvent>
       <Command>copy "C:\Users\Harry\Desktop\VBot\Release\VBot.dll" "E:\Games\SteamGames\steamapps\common\Geometry Dash\extensions"
-start "" "steam://rungameid/322170"</Command>
+start "" steam://rungameid/322170</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -537,6 +537,7 @@ start "" "steam://rungameid/322170"</Command>
     <ClInclude Include="cappuccino-sdk\incl\extensions\spine\spine-cocos2dx.h" />
     <ClInclude Include="cappuccino-sdk\incl\extensions\spine\spine.h" />
     <ClInclude Include="scr\Headers\FPSBypass.h" />
+    <ClInclude Include="scr\Headers\FPSMultiplier.h" />
     <ClInclude Include="scr\Headers\framework.h" />
     <ClInclude Include="scr\Headers\MinHook.h" />
     <ClInclude Include="scr\Headers\pch.h" />
@@ -561,6 +562,7 @@ start "" "steam://rungameid/322170"</Command>
     <ClCompile Include="cappuccino-sdk\incl\cocos2dx\kazmath\src\vec4.c" />
     <ClCompile Include="scr\dllmain.cpp" />
     <ClCompile Include="scr\FPSBypass.cpp" />
+    <ClCompile Include="scr\FPSMultiplier.cpp" />
     <ClCompile Include="scr\pch.cpp" />
     <ClCompile Include="scr\SpeedHack.cpp" />
     <ClCompile Include="scr\VBot.cpp" />

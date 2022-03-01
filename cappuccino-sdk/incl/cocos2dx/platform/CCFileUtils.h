@@ -155,7 +155,8 @@ public:
 
      @since v2.1
      */
-    virtual std::string fullPathForFilename(const char* pszFileName, bool);
+    RT_REMOVE(  virtual std::string fullPathForFilename(const char* pszFileName);       )
+    RT_ADD(     virtual std::string fullPathForFilename(const char* pszFileName, bool); )
     
     /**
      * Loads the filenameLookup dictionary from the contents of a filename.
@@ -189,10 +190,6 @@ public:
      * @since v2.1
      * @loadFilenameLookup
      */
-
-    //Robtop Modification:
-    virtual void removeFullPath(const char *);
-
     virtual void loadFilenameLookupDictionaryFromFile(const char* filename);
     
     /** 
@@ -304,9 +301,6 @@ public:
      *  @lua NA
      */
     virtual std::string getWritablePath() = 0;
-
-    //Robtop Modification:
-    virtual std::string getWritablePath2(void);
     
     /**
      *  Checks whether a file exists.
@@ -361,13 +355,6 @@ protected:
      */
     virtual std::string getNewFilename(const char* pszFileName);
     
-
-    //Robtop Modification:
-    virtual bool shouldUseHD(void);
-
-    //Robtop Modification:
-    virtual std::string addSuffix(std::string,std::string);
-
     /**
      *  Gets full path for filename, resolution directory and search path.
      *

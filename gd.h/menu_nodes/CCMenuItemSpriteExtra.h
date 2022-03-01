@@ -10,15 +10,19 @@ namespace gd {
 	};
 
 	#pragma runtime_checks("s", off)
-	class CCMenuItemSpriteExtra : public cocos2d::CCMenuItemSprite {
-	protected:
-		float m_fUnknown;
-		float m_fUnknown2;
-		PAD(0x3c)
-		cocos2d::CCPoint m_obDestPosition;
-		cocos2d::CCPoint m_obOffset;
-		MenuAnimationType m_nAnimationType = kMenuAnimationTypeScale;
-		cocos2d::CCPoint m_obStartPosition;
+	class GDH_DLL CCMenuItemSpriteExtra : public cocos2d::CCMenuItemSprite {
+	public:
+		float m_fScaleMultiplier;	// 0x118
+		float m_fBaseScale;			// 0x11c
+		bool m_bAnimationEnabled;	// 0x120
+		bool m_bColorEnabled;		// 0x121
+		PAD(2)
+		PAD(52)
+		float m_fColorDip;			// 0x158
+		cocos2d::CCPoint m_obDestPosition;	// 0x15c
+		cocos2d::CCPoint m_obOffset;	// 0x164
+		MenuAnimationType m_nAnimationType = kMenuAnimationTypeScale;	// 0x16c
+		cocos2d::CCPoint m_obStartPosition;	// 0x170
 		PAD(0xc)
 
 		bool init(cocos2d::CCNode* spr) {
@@ -31,7 +35,7 @@ namespace gd {
 			);
 		}
 
-		virtual CCMenuItemSpriteExtra* release(bool rel) {
+		CCMenuItemSpriteExtra* destructor(bool rel) {
 			return reinterpret_cast<CCMenuItemSpriteExtra*(__thiscall*)(
 				CCMenuItemSpriteExtra*, bool
 			)>(
@@ -39,6 +43,14 @@ namespace gd {
 			)(
 				this, rel
 			);
+		}
+
+		CCMenuItemSpriteExtra() {
+			reinterpret_cast<CCMenuItemSpriteExtra*(__thiscall*)(
+				CCMenuItemSpriteExtra*
+			)>(
+				base + 0x18db0
+			)(this);
 		}
 
 		virtual void activate() {
@@ -85,6 +97,10 @@ namespace gd {
 		}
 		void setOffset(cocos2d::CCPoint const& pos) {
 			this->m_obOffset = pos;
+		}
+		void setScale(float scale) override {
+			this->CCMenuItemSprite::setScale(scale);
+			this->m_fBaseScale = scale;
 		}
 	};
 	#pragma runtime_checks("s", restore)

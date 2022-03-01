@@ -2,7 +2,9 @@
 #define __COCOS2D_EXT_H__
 
 #include "ExtensionMacros.h"
+#include "ccMacros.h"
 
+#ifndef RT_REMOVE
 #include "CCBReader/CCBFileLoader.h"
 #include "CCBReader/CCBMemberVariableAssigner.h"
 #include "CCBReader/CCBReader.h"
@@ -31,6 +33,7 @@
 #include "CCBReader/CCBValue.h"
 #include "CCBReader/CCData.h"
 #include "CCBReader/CCNode+CCBRelativePositioning.h"
+#endif
 
 #include "GUI/CCControlExtension/CCControlExtensions.h"
 #include "GUI/CCScrollView/CCScrollView.h"
@@ -41,6 +44,7 @@
 #include "network/HttpResponse.h"
 #include "network/HttpClient.h"
 
+#ifndef RT_REMOVE
 #include "CocoStudio/Armature/CCArmature.h"
 #include "CocoStudio/Armature/CCBone.h"
 #include "CocoStudio/Armature/animation/CCArmatureAnimation.h"
@@ -70,6 +74,7 @@
 #include "CocoStudio/Reader/SceneReader.h"
 
 #include "CocoStudio/Action/CCActionManager.h"
+#endif
 
 
 // Physics integration
@@ -78,6 +83,8 @@
 #include "physics_nodes/CCPhysicsSprite.h"
 #endif
 
+#ifndef RT_ADD
 #include "spine/spine-cocos2dx.h"
+#endif
 
 #endif /* __COCOS2D_EXT_H__ */

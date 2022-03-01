@@ -2,6 +2,7 @@
 #define __GD_H__
 
 #include <cocos2d.h>
+#include <cocos-ext.h>
 
 #include "gdMacros.h"
 
@@ -9,12 +10,10 @@ namespace gd {
 	inline auto base = reinterpret_cast<uintptr_t>(GetModuleHandle(0));
 
 	inline bool init() {
-		//if the base address is valid, all other values should be valid.
-		#if (__WARN_DEBUG__ == true)
 		static_assert(sizeof(std::string) == 24,
-			"Any classes containing member strings or using strings in functions will break!\n"
-			"");
-		#endif
+			"\n[GD.H] std::string is not 24 bytes\n" \
+			"[GD.H] Any classes containing member strings or using strings in functions will break!\n" \
+			"[GD.H] this is caused by building in Debug mode, to fix switch to Release\n");
 		return base;
 	}
 }
@@ -40,9 +39,11 @@ enum FMOD_RESULT;
 #include "menu_nodes/CCMenuItemSpriteExtra.h"
 #include "menu_nodes/CCMenuItemToggler.h"
 #include "menu_nodes/Slider.h"
+#include "menu_nodes/InfoAlertButton.h"
 
 #include "manager_nodes/GManager.h"
 #include "manager_nodes/GameManager.h"
+#include "manager_nodes/GameStatsManager.h"
 #include "manager_nodes/GameSoundManager.h"
 #include "manager_nodes/GameLevelManager.h"
 #include "manager_nodes/AchievementManager.h"
@@ -51,6 +52,15 @@ enum FMOD_RESULT;
 #include "manager_nodes/GJEffectManager.h"
 #include "manager_nodes/MusicDownloadManager.h"
 #include "manager_nodes/ObjectToolbox.h"
+#include "manager_nodes/LocalLevelManager.h"
+
+#include "scroll_nodes/CCContentLayer.h"
+#include "scroll_nodes/CCIndexPath.h"
+#include "scroll_nodes/CCScrollLayerExt.h"
+#include "scroll_nodes/TableView.h"
+#include "scroll_nodes/BoomListView.h"
+#include "scroll_nodes/CustomListView.h"
+#include "scroll_nodes/ScrollingLayer.h"
 
 #include "layers_scenes_transitions_nodes/CCNodeContainer.h"
 #include "layers_scenes_transitions_nodes/OBB2D.h"
@@ -80,14 +90,26 @@ enum FMOD_RESULT;
 #include "layers_scenes_transitions_nodes/ProfilePage.h"
 #include "layers_scenes_transitions_nodes/LevelInfoLayer.h"
 #include "layers_scenes_transitions_nodes/LevelBrowserLayer.h"
-
-#include "scroll_nodes/CCContentLayer.h"
-#include "scroll_nodes/CCIndexPath.h"
-#include "scroll_nodes/CCScrollLayerExt.h"
-#include "scroll_nodes/TableView.h"
-#include "scroll_nodes/BoomListView.h"
-#include "scroll_nodes/CustomListView.h"
-#include "scroll_nodes/ScrollingLayer.h"
+#include "layers_scenes_transitions_nodes/CustomizeObjectLayer.h"
+#include "layers_scenes_transitions_nodes/ListButtonBar.h"
+#include "layers_scenes_transitions_nodes/DialogLayer.h"
+#include "layers_scenes_transitions_nodes/GaragePage.h"
+#include "layers_scenes_transitions_nodes/GJGarageLayer.h"
+#include "layers_scenes_transitions_nodes/CreateGuidelinesLayer.h"
+#include "layers_scenes_transitions_nodes/VideoOptionsLayer.h"
+#include "layers_scenes_transitions_nodes/SetupPulsePopup.h"
+#include "layers_scenes_transitions_nodes/ColorSelectPopup.h"
+#include "layers_scenes_transitions_nodes/MoreOptionsLayer.h"
+#include "layers_scenes_transitions_nodes/KeybindingsLayer.h"
+#include "layers_scenes_transitions_nodes/DrawGridLayer.h"
+#include "layers_scenes_transitions_nodes/CreatorLayer.h"
+#include "layers_scenes_transitions_nodes/LevelSearchLayer.h"
+#include "layers_scenes_transitions_nodes/LevelSelectLayer.h"
+#include "layers_scenes_transitions_nodes/OptionsLayer.h"
+#include "layers_scenes_transitions_nodes/DailyLevelPage.h"
+#include "layers_scenes_transitions_nodes/ChallengesPage.h"
+#include "layers_scenes_transitions_nodes/GauntletSelectLayer.h"
+#include "layers_scenes_transitions_nodes/LeaderboardsLayer.h"
 
 #include "audio_nodes/FMODAudioEngine.h"
 #include "audio_nodes/FMODSound.h"
@@ -97,11 +119,13 @@ enum FMOD_RESULT;
 #include "level_nodes/LevelSettingsObject.h"
 #include "level_nodes/SongInfoObject.h"
 #include "level_nodes/ColorAction.h"
+#include "level_nodes/GJMapPack.h"
 
 #include "sprite_nodes/CCSpritePlus.h"
 #include "sprite_nodes/ColorActionSprite.h"
 #include "sprite_nodes/ButtonSprite.h"
 #include "sprite_nodes/GameObject.h"
+#include "sprite_nodes/EffectGameObject.h"
 #include "sprite_nodes/CCAnimatedSprite.h"
 #include "sprite_nodes/AnimatedShopKeeper.h"
 #include "sprite_nodes/PlayerObject.h"
@@ -112,6 +136,10 @@ enum FMOD_RESULT;
 #include "sprite_nodes/GJSpriteColor.h"
 #include "sprite_nodes/SimplePlayer.h"
 #include "sprite_nodes/HardStreak.h"
+#include "sprite_nodes/ColorChannelSprite.h"
+#include "sprite_nodes/TeleportPortalObject.h"
+
+#include "trigger_popups/SetupPickupTriggerPopup.h"
 
 #include "cell_nodes/GJComment.h"
 
@@ -120,5 +148,10 @@ enum FMOD_RESULT;
 #include "other_nodes/CheckpointObject.h"
 #include "other_nodes/PlayerCheckpoint.h"
 #include "other_nodes/PointNode.h"
+#include "other_nodes/UndoObject.h"
+#include "other_nodes/DialogObject.h"
+
+
+#include "GameToolbox.h"
 
 #endif

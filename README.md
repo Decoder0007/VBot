@@ -12,12 +12,16 @@
 - Saving macros
 - Loading macros
 - Proper Options Menu
-- (Buggy) Practice Recording (works 80% of the time)
+- Practice Recording
+- Auto Save
+- Auto Load
+- FPS Bypass
+- Speedhack
+- FRAME MODE wooooooooooo
+- Minimal UI mode (thanks to everyone who bugged me)
+- Ability to hide the UI when disable
+- Frame advance
+- Small macro menu (needs expanding)
 
 ## TODO
 
-- Auto Save
-- Auto Load
-- Safe Mode
-- FPS Bypass
-- Speedhack

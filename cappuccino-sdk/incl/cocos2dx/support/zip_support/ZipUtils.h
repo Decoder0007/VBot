@@ -146,6 +146,32 @@ namespace cocos2d
         */
         static void ccSetPvrEncryptionKey(unsigned int keyPart1, unsigned int keyPart2, unsigned int keyPart3, unsigned int keyPart4);
 
+        RT_ADD(
+            /** Encodes to the XOR + Base64 encoding rob uses
+            * @param string the string to encode
+            * @param key the xor key
+            */
+            static std::string base64EncodeEnc(std::string string, std::string key);
+            /** Decodes the XOR + Base64 encoding rob uses
+            * @param string the string to decode
+            * @param key the xor key
+            */
+            static std::string base64DecodeEnc(std::string string, std::string key);
+            
+
+            static std::string base64URLDecode(std::string string);
+            static std::string base64URLEncode(std::string string);
+
+            static std::string compressString(std::string, bool, int);
+            static std::string decompressString(std::string, bool, int);
+            static void decompressString2(unsigned char*, bool, int, int);
+
+            static void encryptDecrypt(std::string, int);
+            static void encryptDecryptWKey(std::string, std::string);
+
+            static char hexToChar(std::string*);
+        )
+
     private:
         static int ccInflateMemoryWithHint(unsigned char *in, unsigned int inLength, unsigned char **out, unsigned int *outLength, 
                                            unsigned int outLenghtHint);

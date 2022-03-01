@@ -145,8 +145,8 @@ public:
     std::string m_sString;
 };
 
-//std::binary_function emoved in C++ 17
-/*struct CCStringCompare : public std::binary_function<CCString *, CCString *, bool> {
+/*
+struct CCStringCompare : public std::binary_function<CCString *, CCString *, bool> {
     public:
         bool operator() (CCString * a, CCString * b) const {
             return strcmp(a->getCString(), b->getCString()) < 0;

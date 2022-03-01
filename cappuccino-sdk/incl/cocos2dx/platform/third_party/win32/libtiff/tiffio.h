@@ -1,4 +1,4 @@
-/* Id: tiffio.h,v 1.89 2012-02-18 16:20:26 bfriesen Exp  */
+/* $Id: tiffio.h,v 1.89 2012-02-18 16:20:26 bfriesen Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler

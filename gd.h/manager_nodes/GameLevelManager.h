@@ -7,7 +7,7 @@ namespace gd {
 
 class GJGameLevel;
 
-    class GameLevelManager : public cocos2d::CCNode {
+    class GDH_DLL GameLevelManager : public cocos2d::CCNode {
     public:
         // thanks to wylie for most of these!
 
@@ -62,6 +62,12 @@ class GJGameLevel;
 
         inline static gd::GJGameLevel* createNewLevel() {
             return reinterpret_cast<gd::GJGameLevel*(__stdcall*)()>( gd::base + 0xa0db0 )();
+        }
+
+        GJGameLevel* getMainLevel(int id, bool unk) {
+            return reinterpret_cast<GJGameLevel*(__thiscall*)(
+                GameLevelManager*, int, bool
+            )>( base + 0xa0940 )(this, id, unk);
         }
     };
 

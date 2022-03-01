@@ -36,6 +36,7 @@ namespace gd {
 		kGameObjectTypeWavePortal = 26,
 		kGameObjectTypeRobotPortal = 27,
 		kGameObjectTypeTeleportPortal = 28,
+		kGameObjectTypeGreenRing = 29,
 		kGameObjectTypeCollectible = 30,
 		kGameObjectTypeUserCoin = 31,
 		kGameObjectTypeDropRing = 32,
@@ -58,45 +59,69 @@ namespace gd {
 	class GJEffectManager;
 
 	#pragma runtime_checks("s", off)
-	class GameObject : public CCSpritePlus {
+	class GDH_DLL GameObject : public CCSpritePlus /* 0x1f0 */ {
 	public:
-		PAD(44);
-		bool m_unk21C;
-		bool m_unk21D;
-		bool m_unk21E;
-		PAD(13);
+		bool m_bUnk3;				// 0x1f0
+		bool m_bIsBlueMaybe;		// 0x1f1
+		float m_fUnk2;				// 0x1f4
+		float m_fUnk;				// 0x1f8
+		float m_fUnk3;				// 0x1fc
+		float m_fUnk4;				// 0x200
+		bool m_bUnk;				// 0x204
+		float m_fAnimSpeed2;		// 0x208
+		bool m_bIsEffectObject;		// 0x20c
+		bool m_bRandomisedAnimStart;// 0x20d
+		float m_fAnimSpeed;			// 0x210
+		bool m_bBlackChild;			// 0x214
+		bool m_bUnkOutlineMaybe;	// 0x215
+		float m_fBlackChildOpacity;	// 0x218
+		bool field_21C;	// 0x21c
+		bool m_bEditor;	// 0x21d
+		bool m_bGroupDisabled;	// 0x21e
+		bool m_bColourOnTop;	// 0x21f
+		GJSpriteColor* m_pMainColourMode;		// 0x220
+		GJSpriteColor* m_pSecondaryColourMode;	// 0x224
+		bool m_bCol1;	// 0x228
+		bool m_bCol2;	// 0x229
 		cocos2d::CCPoint m_obStartPosOffset; //0x22C
-		PAD(4);
-		bool m_unk238;
-		bool m_isFlippedX; //0x239
-		bool m_isFlippedY; //0x23A
-		PAD(1);
+		float m_fUnkRotationField;	// 0x234
+		bool m_bTintTrigger;	// 0x238
+		bool m_bIsFlippedX; 	//0x239
+		bool m_bIsFlippedY; 	//0x23A
 		cocos2d::CCPoint m_obBoxOffset; //0x23C
-		bool m_isOriented; //0x244 idek what this is
-		PAD(3);
-		cocos2d::CCPoint m_unk248; // related to box offset
-		PAD(4);
-		bool m_unk254;
-		PAD(11);
-		cocos2d::CCAction* m_pAction; //0x260
-		PAD(4);
+		bool m_bIsOriented; //0x244
+		cocos2d::CCPoint m_obBoxOffset2; // 0x248
+		OBB2D* m_pObjectOBB2D;	// 0x250
+		bool m_bOriented;	// 0x254
+		cocos2d::CCSprite* m_pGlowSprite;	// 0x258
+		bool m_bNotEditor;	// 0x25c
+		cocos2d::CCAction* m_pMyAction; //0x260
+		bool m_bUnk1;	//0x264
+		bool m_bRunActionWithTag;	//0x265
+		bool m_bObjectPoweredOn;	//0x266
 		cocos2d::CCSize m_obObjectSize; //0x268
-		bool m_unk270;
-		bool m_unk271;
-		bool m_unk272;
-		PAD(1);
-		cocos2d::CCParticleSystemQuad* m_pParticleSystem;
-		std::string m_sEffectPlistName; //0x278
-		PAD(32);
-		bool m_unk2B0; // has custom scale or moved idfk
-		PAD(7);
-		cocos2d::CCRect m_objectRect2; //0x2B8
+		bool m_bTrigger;	// 0x270
+		bool m_bActive; 	// 0x271
+		bool m_bAnimationFinished;	// 0x272
+		cocos2d::CCParticleSystemQuad* m_pParticleSystem;	// 0x274
+		std::string m_sEffectPlistName; // 0x278
+		bool m_bParticleAdded;	// 0x290
+		bool m_bHasParticles;	// 0x291
+		bool m_bUnkCustomRing;	// 0x292
+		cocos2d::CCPoint m_obPortalPosition;	// 0x294
+		bool m_bUnkParticleSystem;	// 0x29c
+		cocos2d::CCRect m_obObjectTextureRect;	// 0x2a0
+		bool m_bTextureRectDirty;	// 0x2b0
+		float m_fRectXCenterMaybe;	// 0x2b4
+		cocos2d::CCRect m_obObjectRect2; //0x2B8
 		bool m_bIsObjectRectDirty; //0x2C8
 		bool m_bIsOrientedRectDirty; //0x2C9
 		bool m_bHasBeenActivated; //0x2CA
 		bool m_bHasBeenActivatedP2; //0x2CB
-		PAD(24);
-		cocos2d::CCSprite* m_pUnkSprite; //0x2E4
+		PAD(16);
+		bool m_bSawIsDisabled; // 0x2dc
+		PAD(7);
+		cocos2d::CCSprite* m_pDetailSprite; //0x2E4
 		PAD(8);
 		bool m_bIsRotatedSide; //0x2F0 for 90 and 270 degrees rotations
 		PAD(3);
@@ -105,7 +130,9 @@ namespace gd {
 		int m_nUniqueID; //0x2FC
 		GameObjectType m_nObjectType; //0x300
 		int m_nSection; //0x304
-		PAD(4);
+		bool m_bTouchTriggered; //0x308
+		bool m_bSpawnTriggered; //0x309
+		PAD(2)
 		cocos2d::CCPoint m_obStartPosition; //0x30C
 		std::string m_sTextureName; //0x314
 		bool m_unk32C;
@@ -115,7 +142,8 @@ namespace gd {
 		float m_unk340;
 		PAD(16);
 		bool m_bIsGlowDisabled; //0x354
-		PAD(7);
+		PAD(3);
+		int m_nTargetColorID;	// 0x358 (for color triggers)
 		float m_fScale; //0x35C
 		int m_nObjectID; //0x360
 		PAD(4);
@@ -135,17 +163,18 @@ namespace gd {
 		GJSpriteColor* m_pBaseColor; //0x3A8
 		GJSpriteColor* m_pDetailColor; //0x3AC
 		PAD(4);
-		int m_nDefaultZLayer; // 0x03B4
-		int m_nZLayer; //0x3B8
-		int m_nZOrder; //0x3BC
+		ZLayer m_nDefaultZLayer; // 0x03B4
+		ZLayer m_nZLayer; //0x3B8
+		int m_nGameZOrder; //0x3BC
 		std::string m_unk3C0;
-		bool m_unk3D8;
+		bool m_bShowGamemodeBorders;
 		bool m_unk3D9;
 		bool m_bIsSelected; //0x3DA
 		PAD(1);
 		int m_nGlobalClickCounter; //0x3DC i have no idea what this is for
-		PAD(12);
-		float m_fMultiScaleMultiplier;
+		PAD(8)
+		bool m_bUnknownLayerRelated;	// 0x3e8
+		float m_fMultiScaleMultiplier;	// 0x3ec
 		bool m_bIsGroupParent; //0x3F0
 		PAD(3);
 		short* m_pGroups; //0x3F4
@@ -213,6 +242,11 @@ namespace gd {
 				)(this, opacity);
 		}
 
+		static GameObject* createWithKey(int key) {
+			return reinterpret_cast<GameObject* (__fastcall*)(int)>(
+				base + 0xcf4f0
+				)(key);
+		}
 		static GameObject* createWithFrame(const char* frame) {
 			return reinterpret_cast<GameObject* (__fastcall*)(const char*)>(
 				base + 0xCF8F0
@@ -256,6 +290,22 @@ namespace gd {
 			);
 		}
 
+		void removeFromGroup(int id) {
+			reinterpret_cast<void(__thiscall*)(
+				GameObject*, int
+			)>(
+				base + 0xeb930
+			)(
+				this, id
+			);
+		}
+
+		cocos2d::CCPoint getBoxOffset() {
+			return *reinterpret_cast<cocos2d::CCPoint*(__thiscall*)(
+				GameObject*
+			)>(base + 0xef350)(this);
+		}
+
 		cocos2d::CCPoint getStartPosition() { return m_obStartPosition; }
 		void setStartPosition(cocos2d::CCPoint const& p) { m_obStartPosition = p; }
 		
@@ -271,8 +321,8 @@ namespace gd {
 		
 			return res;
 		}
-		int getGameZOrder() { return m_nZOrder; }
-		void setGameZOrder(int z) { m_nZOrder = z; }
+		int getGameZOrder() { return m_nGameZOrder; }
+		void setGameZOrder(int z) { m_nGameZOrder = z; }
 		void setGameObjType(GameObjectType t) { m_nObjectType = t; }
 
 		GJSpriteColor* getBaseColor() { return m_pBaseColor; }
@@ -286,7 +336,30 @@ namespace gd {
 		void setRScale(float scale) {
 			reinterpret_cast<void(__thiscall*)(GameObject*, float)>(base + 0xe5280)(this, scale);
 		}
+		void setObjectColor(const cocos2d::ccColor3B& color) {
+			reinterpret_cast<void(__thiscall*)(GameObject*, const cocos2d::ccColor3B&)>(base + 0xee620)(this, color);
+		}
+		void selectObject(const cocos2d::ccColor3B& color = { 0, 255, 0 }) {
+			reinterpret_cast<void(__thiscall*)(GameObject*, const cocos2d::ccColor3B)>(base + 0xee960)(this, color);
+		}
+
+		cocos2d::CCRepeatForever* createRotateAction(float f, int n) {
+			__asm movss xmm1, f
+
+			auto pRet = reinterpret_cast<cocos2d::CCRepeatForever*(__thiscall*)(GameObject*, int)>(
+				base + 0xe49b0
+			)(this, n);
+
+			return pRet;
+		}
+
+		void setMyAction(cocos2d::CCAction* pAction) {
+			return reinterpret_cast<void(__thiscall*)(GameObject*, cocos2d::CCAction*)>(
+				base + 0xd1b90
+			)(this, pAction);
+		}
 	};
+
 	#pragma runtime_checks("s", restore)
 }
 

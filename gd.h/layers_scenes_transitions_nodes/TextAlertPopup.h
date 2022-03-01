@@ -4,16 +4,16 @@
 #include <gd.h>
 
 #define __cdecl
-using skip_t = char;
-
 namespace gd {
-    class TextAlertPopup : public cocos2d::CCNode {
+    class GDH_DLL TextAlertPopup : public cocos2d::CCNode {
         public:
             static TextAlertPopup* create(const char* _text, float _time, float _scale) {
                 __asm {
                     movss xmm0, _time
                     movss xmm1, _scale
                 }
+
+                using skip_t = char;
 
                 // ok this has got to be some of the
                 // wackiest bugfixing i've ever done

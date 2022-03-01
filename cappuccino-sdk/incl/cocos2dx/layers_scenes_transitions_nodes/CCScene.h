@@ -48,8 +48,6 @@ It is a good practice to use and CCScene as the parent of all your nodes.
 */
 class CC_DLL CCScene : public CCNode
 {
-private:
-    uint32_t m_uUnknown;
 public:
     /**
      *  @js ctor
@@ -61,9 +59,19 @@ public:
      */
     virtual ~CCScene();
     bool init();
-    int getHighestChildZ();
 
     static CCScene *create(void);
+
+    RT_ADD(
+        CCScene(const CCScene&);
+        
+        CCScene& operator=(const CCScene&);
+
+        int getHighestChildZ(void);
+
+    protected:
+        void* m_pIDK;
+    )
 };
 
 // end of scene group

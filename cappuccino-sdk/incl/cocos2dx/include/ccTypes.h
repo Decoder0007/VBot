@@ -44,6 +44,34 @@ typedef struct _ccColor3B
     GLubyte b;
 } ccColor3B;
 
+RT_ADD(
+typedef struct _ccHSVValue
+{
+    float h, s, v;
+    GLubyte absoluteSaturation;
+    GLubyte absoluteBrightness;
+    private: unsigned char __pad[2];
+} ccHSVValue;
+)
+
+static inline ccHSVValue
+cchsv(const float vh, const float vs, const float vv, const bool as, const bool ab)
+{
+    ccHSVValue hsv;
+    hsv.h = vh;
+    hsv.s = vs;
+    hsv.v = vv;
+    hsv.absoluteSaturation = as;
+    hsv.absoluteBrightness = ab;
+    return hsv;
+}
+
+static inline bool hsv_geta(ccHSVValue hsv, bool brightOrSaturation)
+{
+    if (brightOrSaturation) return static_cast<bool>(hsv.absoluteSaturation);
+    return static_cast<bool>(hsv.absoluteBrightness);
+}
+
 //! helper macro that creates an ccColor3B type
 static inline ccColor3B
 ccc3(const GLubyte r, const GLubyte g, const GLubyte b)

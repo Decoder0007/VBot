@@ -948,8 +948,7 @@ public:
     virtual void update(float time);
 
     /** This is the target that the action will be forced to run with */
-    //Robtob Modification;
-    ROB_CC_SYNTHESIZE_RETAIN(CCNode*, m_pForcedTarget, ForcedTarget);
+    CC_SYNTHESIZE_RETAIN(CCNode*, m_pForcedTarget, ForcedTarget);
 private:
     CCFiniteTimeAction* m_pAction;
 };
