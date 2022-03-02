@@ -25,3 +25,4 @@
 
 ## TODO
 
+- Fix accuracy it's shit rn
